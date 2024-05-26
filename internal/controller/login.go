@@ -12,7 +12,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// 登录管理
+// Login 登录管理
 var Login = cLogin{}
 
 type cLogin struct{}
