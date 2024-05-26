@@ -28,7 +28,7 @@ func (s *sReply) Create(ctx context.Context, in model.ReplyCreateInput) error {
 	return dao.Reply.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 覆盖用户ID
 		in.UserId = service.BizCtx().Get(ctx).User.Id
-		_, err := dao.Reply.Ctx(ctx).Data(in).Insert()
+		_, err := dao.Reply.Ctx(ctx).TX(tx).Data(in).Insert()
 		if err == nil {
 			err = service.Content().AddReplyCount(ctx, in.TargetId, 1)
 		}
@@ -45,7 +45,7 @@ func (s *sReply) Delete(ctx context.Context, id uint) error {
 			return err
 		}
 		// 删除回复记录
-		_, err = dao.Reply.Ctx(ctx).Where(g.Map{
+		_, err = dao.Reply.Ctx(ctx).TX(tx).Where(g.Map{
 			dao.Reply.Columns().Id:     id,
 			dao.Reply.Columns().UserId: service.BizCtx().Get(ctx).User.Id,
 		}).Delete()
@@ -66,11 +66,11 @@ func (s *sReply) Delete(ctx context.Context, id uint) error {
 	})
 }
 
-// 删除回复(硬删除)
+// DeleteByUserContentId 删除回复(硬删除)
 func (s *sReply) DeleteByUserContentId(ctx context.Context, userId, contentId uint) error {
 	return dao.Reply.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 删除内容对应的回复
-		_, err := dao.Reply.Ctx(ctx).Where(g.Map{
+		_, err := dao.Reply.Ctx(ctx).TX(tx).Where(g.Map{
 			dao.Reply.Columns().TargetId: contentId,
 			dao.Reply.Columns().UserId:   userId,
 		}).Delete()
@@ -78,7 +78,7 @@ func (s *sReply) DeleteByUserContentId(ctx context.Context, userId, contentId ui
 	})
 }
 
-// 获取回复列表
+// GetList 获取回复列表
 func (s *sReply) GetList(ctx context.Context, in model.ReplyGetListInput) (out *model.ReplyGetListOutput, err error) {
 	out = &model.ReplyGetListOutput{
 		Page: in.Page,

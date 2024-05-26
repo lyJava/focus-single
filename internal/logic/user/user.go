@@ -44,17 +44,17 @@ func New() *sUser {
 	}
 }
 
-// 获得头像上传路径
+// GetAvatarUploadPath 获得头像上传路径
 func (s *sUser) GetAvatarUploadPath() string {
 	return s.avatarUploadPath
 }
 
-// 获得头像上传对应的URL前缀
+// GetAvatarUploadUrlPrefix 获得头像上传对应的URL前缀
 func (s *sUser) GetAvatarUploadUrlPrefix() string {
 	return s.avatarUploadUrlPrefix
 }
 
-// 执行登录
+// Login 执行登录
 func (s *sUser) Login(ctx context.Context, in model.UserLoginInput) error {
 	userEntity, err := s.GetUserByPassportAndPassword(
 		ctx,
@@ -80,17 +80,17 @@ func (s *sUser) Login(ctx context.Context, in model.UserLoginInput) error {
 	return nil
 }
 
-// 注销
+// Logout 注销
 func (s *sUser) Logout(ctx context.Context) error {
 	return service.Session().RemoveUser(ctx)
 }
 
-// 将密码按照内部算法进行加密
+// EncryptPassword 将密码按照内部算法进行加密
 func (s *sUser) EncryptPassword(passport, password string) string {
 	return gmd5.MustEncrypt(passport + password)
 }
 
-// 根据账号和密码查询用户信息，一般用于账号密码登录。
+// GetUserByPassportAndPassword 根据账号和密码查询用户信息，一般用于账号密码登录。
 // 注意password参数传入的是按照相同加密算法加密过后的密码字符串。
 func (s *sUser) GetUserByPassportAndPassword(ctx context.Context, passport, password string) (user *entity.User, err error) {
 	err = dao.User.Ctx(ctx).Where(g.Map{
@@ -100,7 +100,7 @@ func (s *sUser) GetUserByPassportAndPassword(ctx context.Context, passport, pass
 	return
 }
 
-// 检测给定的账号是否唯一
+// CheckPassportUnique 检测给定的账号是否唯一
 func (s *sUser) CheckPassportUnique(ctx context.Context, passport string) error {
 	n, err := dao.User.Ctx(ctx).Where(dao.User.Columns().Passport, passport).Count()
 	if err != nil {
@@ -112,7 +112,7 @@ func (s *sUser) CheckPassportUnique(ctx context.Context, passport string) error 
 	return nil
 }
 
-// 检测给定的昵称是否唯一
+// CheckNicknameUnique 检测给定的昵称是否唯一
 func (s *sUser) CheckNicknameUnique(ctx context.Context, nickname string) error {
 	n, err := dao.User.Ctx(ctx).Where(dao.User.Columns().Nickname, nickname).Count()
 	if err != nil {
@@ -124,7 +124,7 @@ func (s *sUser) CheckNicknameUnique(ctx context.Context, nickname string) error 
 	return nil
 }
 
-// 用户注册。
+// Register 用户注册。
 func (s *sUser) Register(ctx context.Context, in model.UserRegisterInput) error {
 	return dao.User.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		var user *entity.User
@@ -144,16 +144,16 @@ func (s *sUser) Register(ctx context.Context, in model.UserRegisterInput) error 
 			return gerror.Wrapf(err, `自动创建头像失败`)
 		}
 		user.Avatar = fmt.Sprintf(`%s/%s.jpg`, s.avatarUploadUrlPrefix, user.Passport)
-		_, err := dao.User.Ctx(ctx).Data(user).OmitEmpty().Save()
+		_, err := dao.User.Ctx(ctx).TX(tx).Data(user).OmitEmpty().Save()
 		return err
 	})
 }
 
-// 修改个人密码
+// UpdatePassword 修改个人密码
 func (s *sUser) UpdatePassword(ctx context.Context, in model.UserPasswordInput) error {
 	return dao.User.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		oldPassword := s.EncryptPassword(service.BizCtx().Get(ctx).User.Passport, in.OldPassword)
-		n, err := dao.User.Ctx(ctx).
+		n, err := dao.User.Ctx(ctx).TX(tx).
 			Where(dao.User.Columns().Password, oldPassword).
 			Where(dao.User.Columns().Id, service.BizCtx().Get(ctx).User.Id).
 			Count()
@@ -171,7 +171,7 @@ func (s *sUser) UpdatePassword(ctx context.Context, in model.UserPasswordInput) 
 	})
 }
 
-// 获取个人信息
+// GetProfileById 获取个人信息
 func (s *sUser) GetProfileById(ctx context.Context, userId uint) (out *model.UserGetProfileOutput, err error) {
 	if err = dao.User.Ctx(ctx).WherePri(userId).Scan(&out); err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (s *sUser) GetProfileById(ctx context.Context, userId uint) (out *model.Use
 	return
 }
 
-// 修改个人资料
+// GetProfile 修改个人资料
 func (s *sUser) GetProfile(ctx context.Context) (*model.UserGetProfileOutput, error) {
 	return s.GetProfileById(ctx, service.BizCtx().Get(ctx).User.Id)
 }
@@ -197,7 +197,7 @@ func (s *sUser) UpdateAvatar(ctx context.Context, in model.UserUpdateAvatarInput
 		var (
 			err error
 		)
-		_, err = dao.User.Ctx(ctx).Data(do.User{
+		_, err = dao.User.Ctx(ctx).TX(tx).Data(do.User{
 			Avatar: in.Avatar,
 		}).Where(do.User{
 			Id: in.UserId,
@@ -206,7 +206,7 @@ func (s *sUser) UpdateAvatar(ctx context.Context, in model.UserUpdateAvatarInput
 	})
 }
 
-// 修改个人资料
+// UpdateProfile 修改个人资料
 func (s *sUser) UpdateProfile(ctx context.Context, in model.UserUpdateProfileInput) error {
 	return dao.User.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		var (
@@ -236,7 +236,7 @@ func (s *sUser) UpdateProfile(ctx context.Context, in model.UserUpdateProfileInp
 
 }
 
-// 禁用指定用户
+// Disable 禁用指定用户
 func (s *sUser) Disable(ctx context.Context, id uint) error {
 	_, err := dao.User.Ctx(ctx).
 		Data(dao.User.Columns().Status, consts.UserStatusDisabled).
@@ -245,7 +245,7 @@ func (s *sUser) Disable(ctx context.Context, id uint) error {
 	return err
 }
 
-// 查询用户内容列表及用户信息
+// GetList 查询用户内容列表及用户信息
 func (s *sUser) GetList(ctx context.Context, in model.UserGetContentListInput) (out *model.UserGetListOutput, err error) {
 	out = &model.UserGetListOutput{}
 	// 内容列表
@@ -266,7 +266,7 @@ func (s *sUser) GetList(ctx context.Context, in model.UserGetContentListInput) (
 	return
 }
 
-// 消息列表
+// GetMessageList 消息列表
 func (s *sUser) GetMessageList(ctx context.Context, in model.UserGetMessageListInput) (out *model.UserGetMessageListOutput, err error) {
 	out = &model.UserGetMessageListOutput{
 		Page: in.Page,
@@ -298,7 +298,7 @@ func (s *sUser) GetMessageList(ctx context.Context, in model.UserGetMessageListI
 	return
 }
 
-// 获取文章数量
+// GetUserStats 获取文章数量
 func (s *sUser) GetUserStats(ctx context.Context, userId uint) (map[string]int, error) {
 	// 文章统计
 	m := dao.Content.Ctx(ctx).Fields(dao.Content.Columns().Type, "count(*) total")
@@ -331,13 +331,13 @@ func (s *sUser) GetUserStats(ctx context.Context, userId uint) (map[string]int, 
 	return statsMap, nil
 }
 
-// 当前用户是否管理员
+// IsCtxAdmin 当前用户是否管理员
 func (s *sUser) IsCtxAdmin(ctx context.Context) bool {
 	var ctxUser = service.BizCtx().Get(ctx).User
 	return s.IsAdmin(ctx, ctxUser.Id)
 }
 
-// 判断给定用户是否管理员
+// IsAdmin 判断给定用户是否管理员
 func (s *sUser) IsAdmin(ctx context.Context, userId uint) bool {
 	adminIds := g.Cfg().MustGet(ctx, "settings.adminIds").Uints()
 	for _, adminId := range adminIds {

@@ -226,6 +226,7 @@ func (s *sContent) Update(ctx context.Context, in model.ContentUpdateInput) erro
 		}
 		_, err := dao.Content.
 			Ctx(ctx).
+			TX(tx).
 			Data(in).
 			FieldsEx(dao.Content.Columns().Id).
 			Where(dao.Content.Columns().Id, in.Id).
@@ -241,14 +242,14 @@ func (s *sContent) Delete(ctx context.Context, id uint) error {
 		user := service.BizCtx().Get(ctx).User
 		// 管理员直接删除文章和评论
 		if user.IsAdmin {
-			_, err := dao.Content.Ctx(ctx).Where(dao.Content.Columns().Id, id).Delete()
+			_, err := dao.Content.Ctx(ctx).TX(tx).Where(dao.Content.Columns().Id, id).Delete()
 			if err == nil {
-				_, err = dao.Reply.Ctx(ctx).Where(dao.Reply.Columns().TargetId, id).Delete()
+				_, err = dao.Reply.Ctx(ctx).TX(tx).Where(dao.Reply.Columns().TargetId, id).Delete()
 			}
 			return err
 		}
 		// 删除内容
-		_, err := dao.Content.Ctx(ctx).Where(g.Map{
+		_, err := dao.Content.Ctx(ctx).TX(tx).Where(g.Map{
 			dao.Content.Columns().Id:     id,
 			dao.Content.Columns().UserId: service.BizCtx().Get(ctx).User.Id,
 		}).Delete()
@@ -285,7 +286,7 @@ func (s *sContent) AddReplyCount(ctx context.Context, id uint, count int) error 
 // AdoptReply 采纳回复
 func (s *sContent) AdoptReply(ctx context.Context, id uint, replyID uint) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.Content.Ctx(ctx).
+		_, err := dao.Content.Ctx(ctx).TX(tx).
 			Data(dao.Content.Columns().AdoptedReplyId, replyID).
 			Where(dao.Content.Columns().UserId, service.BizCtx().Get(ctx).User.Id).
 			WherePri(id).
@@ -300,7 +301,7 @@ func (s *sContent) AdoptReply(ctx context.Context, id uint, replyID uint) error 
 // UnacceptedReply 取消采纳回复
 func (s *sContent) UnacceptedReply(ctx context.Context, id uint) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.Content.Ctx(ctx).
+		_, err := dao.Content.Ctx(ctx).TX(tx).
 			Data(dao.Content.Columns().AdoptedReplyId, 0).
 			WherePri(id).
 			Update()
