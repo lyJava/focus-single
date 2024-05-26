@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"log"
 
 	"focus-single/internal/service"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -13,6 +14,8 @@ import (
 	"focus-single/internal/dao"
 	"focus-single/internal/model"
 	"focus-single/internal/model/entity"
+
+	"github.com/spf13/cast"
 )
 
 type sContent struct{}
@@ -187,14 +190,14 @@ func (s *sContent) Search(ctx context.Context, in model.ContentSearchInput) (out
 // GetDetail 查询详情
 func (s *sContent) GetDetail(ctx context.Context, id uint) (out *model.ContentGetDetailOutput, err error) {
 	out = &model.ContentGetDetailOutput{}
-	if err := dao.Content.Ctx(ctx).WherePri(id).Scan(&out.Content); err != nil {
+	if err := dao.Content.Ctx(ctx).Where(dao.Content.Columns().Id, cast.ToInt64(id)).Scan(&out.Content); err != nil {
 		return nil, err
 	}
 	// 没有数据
 	if out.Content == nil {
 		return nil, nil
 	}
-	err = dao.User.Ctx(ctx).WherePri(out.Content.UserId).Scan(&out.User)
+	err = dao.User.Ctx(ctx).Where(dao.Content.Columns().Id, out.Content.UserId).Scan(&out.User)
 	if err != nil {
 		return nil, err
 	}
@@ -202,6 +205,8 @@ func (s *sContent) GetDetail(ctx context.Context, id uint) (out *model.ContentGe
 }
 
 // Create 创建内容
+//
+//goland:noinspection SqlResolve,SqlCaseVsIf,SqlNoDataSourceInspection,SqlDialectInspection,GoConvertStringLiterals
 func (s *sContent) Create(ctx context.Context, in model.ContentCreateInput) (out model.ContentCreateOutput, err error) {
 	if in.UserId == 0 {
 		in.UserId = service.BizCtx().Get(ctx).User.Id
@@ -210,11 +215,34 @@ func (s *sContent) Create(ctx context.Context, in model.ContentCreateInput) (out
 	if err = ghtml.SpecialCharsMapOrStruct(in); err != nil {
 		return out, err
 	}
-	lastInsertID, err := dao.Content.Ctx(ctx).Data(in).InsertAndGetId()
-	if err != nil {
-		return out, err
+
+	sqlType := dao.Interact.DB().GetConfig().Type
+	log.Printf("数据库类型===%s", sqlType)
+
+	var lastRowId int64
+
+	if sqlType == "mysql" {
+		lastRowId, err = dao.Content.Ctx(ctx).Data(in).InsertAndGetId()
+		if err != nil {
+			log.Printf("发布内容出错===%+v", err)
+			return out, err
+		}
 	}
-	return model.ContentCreateOutput{ContentId: uint(lastInsertID)}, err
+
+	if sqlType == "pgsql" {
+		insertSql := `INSERT INTO gf_content(user_id, type, category_id,  title, content, created_at, updated_at) 
+    					VALUES ($1, $2, $3, $4,$5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id`
+		query, err := g.DB().Ctx(ctx).GetOne(ctx, insertSql, in.UserId, in.Type, in.CategoryId, in.Title, in.Content)
+		if err != nil {
+			log.Printf("发布内容出错===%+v", err)
+			return out, err
+		}
+		lastRowId = cast.ToInt64(query.Map()["id"])
+	}
+
+	log.Printf("发布内容返回===%d", lastRowId)
+
+	return model.ContentCreateOutput{ContentId: uint(lastRowId)}, nil
 }
 
 // Update 修改
@@ -264,7 +292,7 @@ func (s *sContent) Delete(ctx context.Context, id uint) error {
 // AddViewCount 浏览次数增加
 func (s *sContent) AddViewCount(ctx context.Context, id uint, count int) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.Content.Ctx(ctx).WherePri(id).Increment(dao.Content.Columns().ViewCount, count)
+		_, err := dao.Content.Ctx(ctx).Where(dao.Content.Columns().Id, id).Increment(dao.Content.Columns().ViewCount, count)
 		if err != nil {
 			return err
 		}
@@ -275,7 +303,7 @@ func (s *sContent) AddViewCount(ctx context.Context, id uint, count int) error {
 // AddReplyCount 回复次数增加
 func (s *sContent) AddReplyCount(ctx context.Context, id uint, count int) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.Content.Ctx(ctx).WherePri(id).Increment(dao.Content.Columns().ReplyCount, count)
+		_, err := dao.Content.Ctx(ctx).Where(dao.Content.Columns().Id, id).Increment(dao.Content.Columns().ReplyCount, count)
 		if err != nil {
 			return err
 		}

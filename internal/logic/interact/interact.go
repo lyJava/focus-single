@@ -2,6 +2,8 @@ package interact
 
 import (
 	"context"
+	"github.com/gogf/gf/v2/frame/g"
+	"log"
 
 	"focus-single/internal/consts"
 	"focus-single/internal/dao"
@@ -24,30 +26,74 @@ func New() *sInteract {
 	return &sInteract{}
 }
 
-// 赞
+// Zan 赞
 func (s *sInteract) Zan(ctx context.Context, targetType string, targetId uint) error {
-	return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		customCtx := service.BizCtx().Get(ctx)
-		if customCtx == nil || customCtx.User == nil {
-			return nil
-		}
-		r, err := dao.Interact.Ctx(ctx).Data(do.Interact{
-			UserId:     customCtx.User.Id,
-			TargetId:   targetId,
-			TargetType: targetType,
-			Type:       consts.InteractTypeZan,
-		}).InsertIgnore()
-		if err != nil {
-			return err
-		}
-		if n, _ := r.RowsAffected(); n == 0 {
-			return gerror.New("您已经赞过啦")
-		}
-		return s.updateCount(ctx, consts.InteractTypeZan, targetType, targetId, 1)
-	})
+	sqlType := dao.Interact.DB().GetConfig().Type
+	log.Printf("数据库类型===%s", sqlType)
+	if sqlType == "mysql" {
+		return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+			customCtx := service.BizCtx().Get(ctx)
+			if customCtx == nil || customCtx.User == nil {
+				return nil
+			}
+			r, err := dao.Interact.Ctx(ctx).Data(do.Interact{
+				UserId:     customCtx.User.Id,
+				TargetId:   targetId,
+				TargetType: targetType,
+				Type:       consts.InteractTypeZan,
+			}).InsertIgnore()
+			if err != nil {
+				return err
+			}
+			if n, _ := r.RowsAffected(); n == 0 {
+				return gerror.New("您已经赞过啦")
+			}
+			return s.updateCount(ctx, consts.InteractTypeZan, targetType, targetId, 1)
+		})
+	}
+	if sqlType == "pgsql" {
+		return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+			customCtx := service.BizCtx().Get(ctx)
+			if customCtx == nil || customCtx.User == nil {
+				return nil
+			}
+			_, err := dao.Interact.Ctx(ctx).Data(do.Interact{
+				UserId:     customCtx.User.Id,
+				TargetId:   targetId,
+				TargetType: targetType,
+				Type:       consts.InteractTypeZan,
+			}).Insert(g.Map{
+				"UserId":     customCtx.User.Id,
+				"TargetId":   targetId,
+				"TargetType": targetType,
+				"Type":       consts.InteractTypeZan,
+			})
+
+			if err != nil {
+				return err
+			}
+
+			r, err := dao.Interact.Ctx(ctx).Data(do.Interact{
+				UserId:     customCtx.User.Id,
+				TargetId:   targetId,
+				TargetType: targetType,
+				Type:       consts.InteractTypeZan,
+			}).Insert()
+
+			if err != nil {
+				return err
+			}
+
+			if n, _ := r.RowsAffected(); n == 0 {
+				return gerror.New("您已经赞过啦")
+			}
+			return s.updateCount(ctx, consts.InteractTypeZan, targetType, targetId, 1)
+		})
+	}
+	return nil
 }
 
-// 取消赞
+// CancelZan 取消赞
 func (s *sInteract) CancelZan(ctx context.Context, targetType string, targetId uint) error {
 	return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		customCtx := service.BizCtx().Get(ctx)
@@ -70,7 +116,7 @@ func (s *sInteract) CancelZan(ctx context.Context, targetType string, targetId u
 	})
 }
 
-// 我是否有对指定内容赞
+// DidIZan 我是否有对指定内容赞
 func (s *sInteract) DidIZan(ctx context.Context, targetType string, targetId uint) (bool, error) {
 	list, err := s.getMyList(ctx)
 	if err != nil {
@@ -84,30 +130,70 @@ func (s *sInteract) DidIZan(ctx context.Context, targetType string, targetId uin
 	return false, nil
 }
 
-// 踩
+// Cai 踩
 func (s *sInteract) Cai(ctx context.Context, targetType string, targetId uint) error {
-	return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		customCtx := service.BizCtx().Get(ctx)
-		if customCtx == nil || customCtx.User == nil {
-			return nil
-		}
-		r, err := dao.Interact.Ctx(ctx).Data(do.Interact{
-			UserId:     customCtx.User.Id,
-			TargetId:   targetId,
-			TargetType: targetType,
-			Type:       consts.InteractTypeCai,
-		}).InsertIgnore()
-		if err != nil {
-			return err
-		}
-		if n, _ := r.RowsAffected(); n == 0 {
-			return gerror.New("您已经踩过啦")
-		}
-		return s.updateCount(ctx, consts.InteractTypeCai, targetType, targetId, 1)
-	})
+	sqlType := dao.Interact.DB().GetConfig().Type
+	log.Printf("数据库类型===%s", sqlType)
+	if sqlType == "mysql" {
+		return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+			customCtx := service.BizCtx().Get(ctx)
+			if customCtx == nil || customCtx.User == nil {
+				return nil
+			}
+			r, err := dao.Interact.Ctx(ctx).Data(do.Interact{
+				UserId:     customCtx.User.Id,
+				TargetId:   targetId,
+				TargetType: targetType,
+				Type:       consts.InteractTypeCai,
+			}).InsertIgnore()
+			if err != nil {
+				return err
+			}
+			if n, _ := r.RowsAffected(); n == 0 {
+				return gerror.New("您已经踩过啦")
+			}
+			return s.updateCount(ctx, consts.InteractTypeCai, targetType, targetId, 1)
+		})
+	}
+
+	if sqlType == "pgsql" {
+		return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+			customCtx := service.BizCtx().Get(ctx)
+			if customCtx == nil || customCtx.User == nil {
+				return nil
+			}
+
+			// 使用 ON CONFLICT DO NOTHING 处理唯一约束冲突
+			r, err := dao.Interact.Ctx(ctx).Data(do.Interact{
+				UserId:     customCtx.User.Id,
+				TargetId:   targetId,
+				TargetType: targetType,
+				Type:       consts.InteractTypeCai,
+			}).Insert(g.Map{
+				"UserId":     customCtx.User.Id,
+				"TargetId":   targetId,
+				"TargetType": targetType,
+				"Type":       consts.InteractTypeCai,
+			})
+
+			if err != nil {
+				return err
+			}
+
+			// 检查受影响的行数
+			if n, _ := r.RowsAffected(); n == 0 {
+				return gerror.New("您已经踩过啦")
+			}
+
+			return s.updateCount(ctx, consts.InteractTypeCai, targetType, targetId, 1)
+		})
+	}
+
+	return nil
+
 }
 
-// 取消踩
+// CancelCai 取消踩
 func (s *sInteract) CancelCai(ctx context.Context, targetType string, targetId uint) error {
 	return dao.Interact.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		customCtx := service.BizCtx().Get(ctx)
@@ -130,7 +216,7 @@ func (s *sInteract) CancelCai(ctx context.Context, targetType string, targetId u
 	})
 }
 
-// 我是否有对指定内容踩
+// DidICai 我是否有对指定内容踩
 func (s *sInteract) DidICai(ctx context.Context, targetType string, targetId uint) (bool, error) {
 	list, err := s.getMyList(ctx)
 	if err != nil {
