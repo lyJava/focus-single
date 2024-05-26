@@ -2,6 +2,7 @@ package captcha
 
 import (
 	"context"
+	"log"
 
 	"focus-single/internal/service"
 	"github.com/gogf/gf/v2/frame/g"
@@ -21,7 +22,7 @@ func init() {
 	service.RegisterCaptcha(New())
 }
 
-// Captcha 验证码管理服务
+// New 验证码管理服务
 func New() *sCaptcha {
 	return &sCaptcha{}
 }
@@ -30,10 +31,10 @@ func newDriver() *base64Captcha.DriverString {
 	driver := &base64Captcha.DriverString{
 		Height:          44,
 		Width:           126,
-		NoiseCount:      5,
-		ShowLineOptions: base64Captcha.OptionShowSineLine | base64Captcha.OptionShowSlimeLine | base64Captcha.OptionShowHollowLine,
+		NoiseCount:      2,
+		ShowLineOptions: base64Captcha.OptionShowHollowLine | base64Captcha.OptionShowHollowLine | base64Captcha.OptionShowHollowLine,
 		Length:          4,
-		Source:          "1234567890",
+		Source:          "123456789",
 		Fonts:           []string{"wqy-microhei.ttc"},
 	}
 	return driver.ConvertFonts()
@@ -47,6 +48,7 @@ func (s *sCaptcha) NewAndStore(ctx context.Context, name string) error {
 	)
 	_, content, answer := captcha.Driver.GenerateIdQuestionAnswer()
 	item, _ := captcha.Driver.DrawCaptcha(content)
+	log.Printf("验证码内容===%s", content)
 	captchaStoreKey := guid.S()
 	request.Session.Set(name, captchaStoreKey)
 	captcha.Store.Set(captchaStoreKey, answer)
@@ -57,6 +59,9 @@ func (s *sCaptcha) NewAndStore(ctx context.Context, name string) error {
 // VerifyAndClear 校验验证码，并清空缓存的验证码信息
 func (s *sCaptcha) VerifyAndClear(r *ghttp.Request, name string, value string) bool {
 	defer r.Session.Remove(name)
+
 	captchaStoreKey := r.Session.MustGet(name).String()
+	log.Printf("captchaStoreKey==%s", captchaStoreKey)
+	log.Printf("value==%s", value)
 	return captchaStore.Verify(captchaStoreKey, value, true)
 }
