@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -78,7 +79,13 @@ func (s *viewBuildIn) TopMenus() ([]*model.MenuItem, error) {
 
 // CategoryTree 获得指定的栏目树形对象，当contentType为空时，表示获取所有的栏目树形对象。
 func (s *viewBuildIn) CategoryTree(contentType string) ([]*model.CategoryTreeItem, error) {
-	return service.Category().GetTree(s.httpRequest.Context(), contentType)
+	treeItems, err := service.Category().GetTree(s.httpRequest.Context(), contentType)
+	if err != nil {
+		log.Printf("获得指定的栏目树形对象出错===%+v", err)
+		return nil, err
+	}
+	log.Printf("获得指定的栏目===%v,类型===%s", treeItems, contentType)
+	return treeItems, nil
 }
 
 // IsNew 最新文章，12小时内为最新文章
