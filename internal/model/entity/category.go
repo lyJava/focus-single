@@ -17,9 +17,9 @@ type Category struct {
 	UserId      uint        `json:"userId"      description:"创建的用户ID"`
 	Name        string      `json:"name"        description:"分类名称"`
 	Sort        uint        `json:"sort"        description:"排序，数值越低越靠前，默认为添加时的时间戳，可用于置顶"`
-	Thumb       string      `json:"thumb"       description:"封面图"`
-	Brief       string      `json:"brief"       description:"简述"`
-	Content     string      `json:"content"     description:"详细介绍"`
+	Thumb       string      `json:"thumb,omitempty"       description:"封面图"`
+	Brief       string      `json:"brief,omitempty"       description:"简述"`
+	Content     string      `json:"content,omitempty"     description:"详细介绍"`
 	CreatedAt   *gtime.Time `json:"createdAt"   description:"创建时间"`
 	UpdatedAt   *gtime.Time `json:"updatedAt"   description:"修改时间"`
 }
