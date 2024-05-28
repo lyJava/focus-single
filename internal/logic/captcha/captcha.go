@@ -2,11 +2,10 @@ package captcha
 
 import (
 	"context"
-	"log"
-
 	"focus-single/internal/service"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gsession"
 	"github.com/gogf/gf/v2/util/guid"
 	"github.com/mojocn/base64Captcha"
 )
@@ -48,20 +47,32 @@ func (s *sCaptcha) NewAndStore(ctx context.Context, name string) error {
 	)
 	_, content, answer := captcha.Driver.GenerateIdQuestionAnswer()
 	item, _ := captcha.Driver.DrawCaptcha(content)
-	log.Printf("验证码内容===%s", content)
+	g.Log().Infof(ctx, "验证码内容===%s", content)
 	captchaStoreKey := guid.S()
-	request.Session.Set(name, captchaStoreKey)
-	captcha.Store.Set(captchaStoreKey, answer)
+	if err := request.Session.Set(name, captchaStoreKey); err != nil {
+		g.Log().Errorf(ctx, "设置验证码session错误==%+v", err)
+		return err
+	}
+	if err := captcha.Store.Set(captchaStoreKey, answer); err != nil {
+		g.Log().Errorf(ctx, "设置验证码Store错误==%+v", err)
+		return err
+	}
 	_, err := item.WriteTo(request.Response.Writer)
 	return err
 }
 
 // VerifyAndClear 校验验证码，并清空缓存的验证码信息
 func (s *sCaptcha) VerifyAndClear(r *ghttp.Request, name string, value string) bool {
-	defer r.Session.Remove(name)
-
+	ctx := context.Background()
 	captchaStoreKey := r.Session.MustGet(name).String()
-	log.Printf("captchaStoreKey==%s", captchaStoreKey)
-	log.Printf("value==%s", value)
+
+	g.Log().Infof(ctx, "验证码:%s,前端传入验证码:%s,验证码缓存key==%s", name, value, captchaStoreKey)
+
+	defer func(Session *gsession.Session, keys ...string) {
+		err := Session.Remove(keys...)
+		if err != nil {
+			g.Log().Errorf(ctx, "验证码清空缓存错误==%+v", err)
+		}
+	}(r.Session, name)
 	return captchaStore.Verify(captchaStoreKey, value, true)
 }
