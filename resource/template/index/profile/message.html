@@ -12,25 +12,43 @@
                     <li class="list-group-item gf-list-item">
                         <a class="btn btn-link text-primary top-node-btn btn-sm"
                            href="/profile/message?type=1">内容回复</a>
-                        <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-                           href="javascript:alert('敬请期待');">个人私信</a>
-                        <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-                           href="javascript:alert('敬请期待');">系统消息</a>
+<!--                        <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"-->
+<!--                           href="javascript:alert('敬请期待');">个人私信</a>-->
+<!--                        <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"-->
+<!--                           href="javascript:alert('敬请期待');">系统消息</a>-->
                     </li>
 
 
                     {{range $index, $item := .Data.List}}
                     <li class="list-group-item gf-list-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1"><img class="nav-avatar" src="{{$item.User.Avatar}}" style="height: 36px;width:36px;"> {{$item.User.Nickname }}</h5>
-                            <small>{{$item.Reply.CreatedAt | $.BuildIn.FormatTime}}</small>
-                        </div>
+                        {{if $item.User}}
+                        <h5 class="mb-1">
+                            <img class="nav-avatar" src="{{$item.User.Avatar}}" alt="" width="36" height="36"/>
+                            <span>{{$item.User.Nickname}}</span>
+                        </h5>
+                        {{else}}
+                        <h3 class="mb-1">
+                            匿名用户
+                        </h3>
+                        {{end}}
+                        <small style="margin-left: 15px;display: inline-flex ;line-height: 15px;">{{$item.Reply.CreatedAt | $.BuildIn.FormatTime}}</small>
 
                         <div class="gf-list-item-text">
                             <div class="float-left">
+                                {{if $item.Category}}
                                 <span class="badge badge-primary float-left">{{$item.Category.Name}}</span>
-                                <a href="/{{$item.Reply.TargetType}}/{{$item.Reply.TargetId}}"
-                                   class="d-inline-block text-truncate float-left" style="max-width: 400px;margin-left: 10px;" style="color: #222;" title="{{$item.Reply.Content}}">{{$item.Content.Title}} </a>
+                                    {{else}}
+                                <span class="badge badge-secondary float-left">未分类</span>
+                                    {{end}}
+
+                                {{if $item.Content}}
+                                    <a href="/{{$item.Reply.TargetType}}/{{$item.Reply.TargetId}}"
+                                   class="d-inline-block text-truncate float-left" style="max-width: 400px;margin-left: 10px;color: #222;" title="{{$item.Reply.Content}}">{{$item.Content.Title}} </a>
+                                {{else}}
+                                <span
+                                   class="d-inline-block text-truncate float-left" style="max-width: 400px;margin-left: 10px;color: #222;" title="{{$item.Reply.Content}}">暂无内容 </span>
+                                {{end}}
+
                                 <span  class="d-inline-block float-left">&nbsp;&nbsp;回复内容:&nbsp;&nbsp;</span>
                                 <span  class="d-inline-block text-truncate float-left" style="max-width: 400px;">{{$item.Reply.Content}}</span>
 
@@ -41,8 +59,9 @@
                                 &nbsp;&nbsp;|&nbsp;&nbsp;
                                 <span class="icon iconfont icon-zan"></span> {{$item.Reply.ZanCount}}
                                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                            &nbsp;   <a href="javascript:gf.content.delete({{ $item.Reply.Id }});"><span
-                                        class="icon iconfont" style="color: black;">&#xe63c;</span></a>
+                            &nbsp;   <a href="javascript:gf.content.delete({{ $item.Reply.Id }});"  title="点击删除">
+                                    <span class="icon iconfont" style="color: red;">&#xe63c;</span>
+                                </a>
                             </span>
                             </div>
                         </div>
@@ -73,10 +92,9 @@
                 icon:    "warning",
                 buttons: ["取消", "确定"]
             }).then((value) => {
-
                 jQuery.ajax({
-                    type: 'POST',
-                    url: '/reply/do-delete',
+                    type: 'DELETE',
+                    url: '/reply/delete',
                     data: {
                         id: id,
                     },
