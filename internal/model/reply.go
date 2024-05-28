@@ -25,7 +25,7 @@ type ReplyGetListInput struct {
 
 // ReplyGetListOutput 查询列表结果
 type ReplyGetListOutput struct {
-	List  []ReplyGetListOutputItem `json:"list"`  // 列表
+	List  []ReplyGetListOutputItem `json:"list"`  // 回复列表
 	Page  int                      `json:"page"`  // 分页码
 	Size  int                      `json:"size"`  // 分页数量
 	Total int                      `json:"total"` // 数据总数
@@ -41,17 +41,17 @@ type ReplyGetListOutputItem struct {
 
 // ReplyListItem 评论列表项
 type ReplyListItem struct {
-	Id         uint        `json:"id"`          // 回复ID
-	ParentId   uint        `json:"parent_id"`   // 回复对应的上一级回复ID(没有的话默认为0)
-	TargetType string      `json:"target_type"` // 评论类型: topic, ask, article, reply
-	TargetId   uint        `json:"target_id"`   // 对应内容ID
-	UserId     uint        `json:"user_id"`     // 网站用户ID
-	ZanCount   uint        `json:"zan_count"`   // 赞
-	CaiCount   uint        `json:"cai_count"`   // 踩
-	Title      string      `json:"title"`       // 回复标题
-	Content    string      `json:"content"`     // 回复内容
-	CreatedAt  *gtime.Time `json:"created_at"`  // 创建时间
-	UpdatedAt  *gtime.Time `json:"updated_at"`  //
+	Id         uint        `json:"id"`                   // 回复ID
+	ParentId   uint        `json:"parent_id"`            // 回复对应的上一级回复ID(没有的话默认为0)
+	TargetType string      `json:"target_type"`          // 评论类型: topic, ask, article, reply
+	TargetId   uint        `json:"target_id"`            // 对应内容ID
+	UserId     uint        `json:"user_id,omitempty"`    // 网站用户ID
+	ZanCount   uint        `json:"zan_count,omitempty"`  // 赞
+	CaiCount   uint        `json:"cai_count,omitempty"`  // 踩
+	Title      string      `json:"title,omitempty"`      // 回复标题
+	Content    string      `json:"content,omitempty"`    // 回复内容
+	CreatedAt  *gtime.Time `json:"created_at,omitempty"` // 创建时间
+	UpdatedAt  *gtime.Time `json:"updated_at,omitempty"` // 修改时间
 }
 
 // ReplyListUserItem 绑定到Content列表中的用户信息
