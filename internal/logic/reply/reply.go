@@ -30,6 +30,9 @@ func (s *sReply) Create(ctx context.Context, in model.ReplyCreateInput) error {
 		if err == nil {
 			err = service.Content().AddReplyCount(ctx, in.TargetId, 1)
 		}
+		if err != nil {
+			g.Log().Errorf(ctx, "创建回复错误===%+v", err)
+		}
 		return err
 	})
 }
@@ -62,7 +65,9 @@ func (s *sReply) Delete(ctx context.Context, id uint) error {
 				err = service.Content().UnacceptedReply(ctx, reply.TargetId)
 			}
 		}
-		g.Log().Errorf(ctx, "删除回复错误===%+v", err)
+		if err != nil {
+			g.Log().Errorf(ctx, "删除回复错误===%+v", err)
+		}
 		return err
 	})
 }
@@ -75,6 +80,9 @@ func (s *sReply) DeleteByUserContentId(ctx context.Context, userId, contentId ui
 			dao.Reply.Columns().TargetId: contentId,
 			dao.Reply.Columns().UserId:   userId,
 		}).Delete()
+		if err != nil {
+			g.Log().Errorf(ctx, "删除回复(硬删除)错误===%+v", err)
+		}
 		return err
 	})
 }
@@ -109,7 +117,7 @@ func (s *sReply) GetList(ctx context.Context, in model.ReplyGetListInput) (out *
 	userIdList := gutil.ListItemValuesUnique(out.List, "Reply", "UserId")
 	targetIdList := gutil.ListItemValuesUnique(out.List, "Reply", "TargetId")
 
-	g.Log().Printf(ctx, "最开始的targetIdList2==%v,userIdList2==%v", targetIdList, userIdList)
+	g.Log().Printf(ctx, "最开始的targetIdList==%v,userIdList==%v", targetIdList, userIdList)
 
 	// 用户信息
 	if err = dao.User.Ctx(ctx).
