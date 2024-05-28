@@ -24,12 +24,12 @@ func New() *sSession {
 	return &sSession{}
 }
 
-// 设置用户Session.
+// SetUser 设置用户Session.
 func (s *sSession) SetUser(ctx context.Context, user *entity.User) error {
 	return service.BizCtx().Get(ctx).Session.Set(sessionKeyUser, user)
 }
 
-// 获取当前登录的用户信息对象，如果用户未登录返回nil。
+// GetUser 获取当前登录的用户信息对象，如果用户未登录返回nil。
 func (s *sSession) GetUser(ctx context.Context) *entity.User {
 	customCtx := service.BizCtx().Get(ctx)
 	if customCtx != nil {
@@ -43,7 +43,7 @@ func (s *sSession) GetUser(ctx context.Context) *entity.User {
 	return &entity.User{}
 }
 
-// 删除用户Session。
+// RemoveUser 删除用户Session。
 func (s *sSession) RemoveUser(ctx context.Context) error {
 	customCtx := service.BizCtx().Get(ctx)
 	if customCtx != nil {
@@ -52,7 +52,7 @@ func (s *sSession) RemoveUser(ctx context.Context) error {
 	return nil
 }
 
-// 设置LoginReferer.
+// SetLoginReferer 设置LoginReferer.
 func (s *sSession) SetLoginReferer(ctx context.Context, referer string) error {
 	if s.GetLoginReferer(ctx) == "" {
 		customCtx := service.BizCtx().Get(ctx)
@@ -63,7 +63,7 @@ func (s *sSession) SetLoginReferer(ctx context.Context, referer string) error {
 	return nil
 }
 
-// 获取LoginReferer.
+// GetLoginReferer 获取LoginReferer.
 func (s *sSession) GetLoginReferer(ctx context.Context) string {
 	customCtx := service.BizCtx().Get(ctx)
 	if customCtx != nil {
@@ -72,7 +72,7 @@ func (s *sSession) GetLoginReferer(ctx context.Context) string {
 	return ""
 }
 
-// 删除LoginReferer.
+// RemoveLoginReferer 删除LoginReferer.
 func (s *sSession) RemoveLoginReferer(ctx context.Context) error {
 	customCtx := service.BizCtx().Get(ctx)
 	if customCtx != nil {
@@ -81,7 +81,7 @@ func (s *sSession) RemoveLoginReferer(ctx context.Context) error {
 	return nil
 }
 
-// 设置Notice
+// SetNotice 设置Notice
 func (s *sSession) SetNotice(ctx context.Context, message *model.SessionNotice) error {
 	customCtx := service.BizCtx().Get(ctx)
 	if customCtx != nil {
@@ -90,7 +90,7 @@ func (s *sSession) SetNotice(ctx context.Context, message *model.SessionNotice) 
 	return nil
 }
 
-// 获取Notice
+// GetNotice 获取Notice
 func (s *sSession) GetNotice(ctx context.Context) (*model.SessionNotice, error) {
 	customCtx := service.BizCtx().Get(ctx)
 	if customCtx != nil {
@@ -107,7 +107,7 @@ func (s *sSession) GetNotice(ctx context.Context) (*model.SessionNotice, error) 
 	return nil, nil
 }
 
-// 删除Notice
+// RemoveNotice 删除Notice
 func (s *sSession) RemoveNotice(ctx context.Context) error {
 	customCtx := service.BizCtx().Get(ctx)
 	if customCtx != nil {
