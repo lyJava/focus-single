@@ -1,19 +1,19 @@
 package view
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
-	"log"
-
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
 
-	"focus-single/internal/service"
-
 	"focus-single/internal/consts"
 	"focus-single/internal/model"
+	"focus-single/internal/service"
 )
 
 // 视图自定义方法管理对象
@@ -80,11 +80,13 @@ func (s *viewBuildIn) TopMenus() ([]*model.MenuItem, error) {
 // CategoryTree 获得指定的栏目树形对象，当contentType为空时，表示获取所有的栏目树形对象。
 func (s *viewBuildIn) CategoryTree(contentType string) ([]*model.CategoryTreeItem, error) {
 	treeItems, err := service.Category().GetTree(s.httpRequest.Context(), contentType)
+	ctx := context.Background()
 	if err != nil {
-		log.Printf("获得指定的栏目树形对象出错===%+v", err)
+		g.Log().Errorf(ctx, "获得指定的栏目树形对象出错===%+v", err)
 		return nil, err
 	}
-	log.Printf("获得指定的栏目===%v,类型===%s", treeItems, contentType)
+	marshal, _ := json.Marshal(&treeItems)
+	g.Log().Infof(ctx, "获得指定的栏目===%s,类型===%s", marshal, contentType)
 	return treeItems, nil
 }
 
@@ -96,7 +98,8 @@ func (s *viewBuildIn) IsNew(gt *gtime.Time) bool {
 	n := gtime.Now().Timestamp()
 	t := gt.Timestamp()
 
-	var hs int64 = 3600
+	// var hs int64 = 3600
+	hs := int64(3600)
 
 	// 最新文章
 	if n-t < hs*12 {
