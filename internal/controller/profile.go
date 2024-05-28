@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"focus-single/api/v1"
 	"focus-single/internal/model"
 	"focus-single/internal/service"
@@ -136,13 +135,11 @@ func (a *cProfile) Message(ctx context.Context, req *v1.ProfileMessageReq) (res 
 	if !ctxUser.IsAdmin {
 		in.UserId = ctxUser.Id
 	}
-	// 回复列表
+	// 获取回复列表
 	replyListOut, err := service.Reply().GetList(ctx, in)
 
-	outList, _ := json.Marshal(&replyListOut)
-	g.Log().Infof(ctx, "最开始的replyListOut=%s", string(outList))
-
 	if err != nil {
+		g.Log().Errorf(ctx, "获取回复列表数据错误=%+v", err)
 		return nil, err
 	}
 	var data = ViewData{
@@ -151,9 +148,7 @@ func (a *cProfile) Message(ctx context.Context, req *v1.ProfileMessageReq) (res 
 		List:  replyListOut.List,
 		Total: replyListOut.Total,
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	// 用户信息统计
 	data.Stats, err = service.User().GetUserStats(ctx, ctxUser.Id)
 	if err != nil {
