@@ -2,7 +2,7 @@ package controller
 
 import (
 	"context"
-
+	"encoding/json"
 	"focus-single/api/v1"
 	"focus-single/internal/model"
 	"focus-single/internal/service"
@@ -11,7 +11,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// 个人中心
+// Profile 个人中心
 var Profile = cProfile{}
 
 type cProfile struct{}
@@ -19,6 +19,7 @@ type cProfile struct{}
 func (a *cProfile) Index(ctx context.Context, req *v1.ProfileIndexReq) (res *v1.ProfileIndexRes, err error) {
 	out, err := service.User().GetProfile(ctx)
 	if err != nil {
+		g.Log().Errorf(ctx, "修改个人资料错误===%+v", err)
 		return nil, err
 	}
 	title := "用户 " + out.Nickname + " 资料"
@@ -34,6 +35,7 @@ func (a *cProfile) Index(ctx context.Context, req *v1.ProfileIndexReq) (res *v1.
 func (a *cProfile) Avatar(ctx context.Context, req *v1.ProfileAvatarReq) (res *v1.ProfileAvatarRes, err error) {
 	out, err := service.User().GetProfile(ctx)
 	if err != nil {
+		g.Log().Errorf(ctx, "获取用户头像错误===%+v", err)
 		return nil, err
 	}
 	title := "用户 " + out.Nickname + " 头像"
@@ -52,6 +54,7 @@ func (a *cProfile) UpdateAvatar(ctx context.Context, req *v1.ProfileUpdateAvatar
 		uploadFile = request.GetUploadFile("file")
 	)
 	if uploadFile == nil {
+		g.Log().Errorf(ctx, "头像文件不存在===%+v", err)
 		return nil, gerror.NewCode(gcode.CodeMissingParameter, "请选择需要上传的文件")
 	}
 	uploadResult, err := service.File().Upload(ctx, model.FileUploadInput{
@@ -69,6 +72,7 @@ func (a *cProfile) UpdateAvatar(ctx context.Context, req *v1.ProfileUpdateAvatar
 		Avatar: req.Avatar,
 	})
 	if err != nil {
+		g.Log().Errorf(ctx, "更新头像错误===%+v", err)
 		return nil, err
 	}
 	// 更新登录session Avatar
@@ -81,6 +85,7 @@ func (a *cProfile) UpdateAvatar(ctx context.Context, req *v1.ProfileUpdateAvatar
 func (a *cProfile) Password(ctx context.Context, req *v1.ProfilePasswordReq) (res *v1.ProfilePasswordRes, err error) {
 	out, err := service.User().GetProfile(ctx)
 	if err != nil {
+		g.Log().Errorf(ctx, "修改密码错误===%+v", err)
 		return nil, err
 	}
 	title := "用户 " + out.Nickname + " 修改密码"
@@ -133,6 +138,10 @@ func (a *cProfile) Message(ctx context.Context, req *v1.ProfileMessageReq) (res 
 	}
 	// 回复列表
 	replyListOut, err := service.Reply().GetList(ctx, in)
+
+	outList, _ := json.Marshal(&replyListOut)
+	g.Log().Infof(ctx, "最开始的replyListOut=%s", string(outList))
+
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +157,7 @@ func (a *cProfile) Message(ctx context.Context, req *v1.ProfileMessageReq) (res 
 	// 用户信息统计
 	data.Stats, err = service.User().GetUserStats(ctx, ctxUser.Id)
 	if err != nil {
+		g.Log().Errorf(ctx, "获取用户文章数量错误===%+v", err)
 		return nil, err
 	}
 	service.View().Render(ctx, model.View{
