@@ -26,7 +26,7 @@ type ReplyCreateReq struct {
 type ReplyCreateRes struct{}
 
 type ReplyDeleteReq struct {
-	g.Meta `path:"/reply" method:"delete" summary:"删除回复接口" tags:"回复"`
+	g.Meta `path:"/reply/delete" method:"delete" summary:"删除回复接口" tags:"回复"`
 	Id     uint `v:"min:1#请选择需要删除的内容" dc:"删除时ID不能为空"`
 }
 type ReplyDeleteRes struct{}
