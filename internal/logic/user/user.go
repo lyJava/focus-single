@@ -62,12 +62,14 @@ func (s *sUser) Login(ctx context.Context, in model.UserLoginInput) error {
 		s.EncryptPassword(in.Passport, in.Password),
 	)
 	if err != nil {
+		g.Log().Errorf(ctx, "用户登录错误===%+v", err)
 		return err
 	}
 	if userEntity == nil {
 		return gerror.New(`账号或密码错误`)
 	}
-	if err := service.Session().SetUser(ctx, userEntity); err != nil {
+	if err = service.Session().SetUser(ctx, userEntity); err != nil {
+		g.Log().Errorf(ctx, "设置用户session错误===%+v", err)
 		return err
 	}
 	// 自动更新上线
@@ -104,6 +106,7 @@ func (s *sUser) GetUserByPassportAndPassword(ctx context.Context, passport, pass
 func (s *sUser) CheckPassportUnique(ctx context.Context, passport string) error {
 	n, err := dao.User.Ctx(ctx).Where(dao.User.Columns().Passport, passport).Count()
 	if err != nil {
+		g.Log().Errorf(ctx, "检测给定的账号错误===%+v", err)
 		return err
 	}
 	if n > 0 {
@@ -141,10 +144,12 @@ func (s *sUser) Register(ctx context.Context, in model.UserRegisterInput) error 
 		// 自动生成头像
 		avatarFilePath := fmt.Sprintf(`%s/%s.jpg`, s.avatarUploadPath, user.Passport)
 		if err := govatar.GenerateFileForUsername(govatar.MALE, user.Passport, avatarFilePath); err != nil {
+			g.Log().Errorf(ctx, "自动创建头像错误===%+v", err)
 			return gerror.Wrapf(err, `自动创建头像失败`)
 		}
 		user.Avatar = fmt.Sprintf(`%s/%s.jpg`, s.avatarUploadUrlPrefix, user.Passport)
 		_, err := dao.User.Ctx(ctx).TX(tx).Data(user).OmitEmpty().Save()
+		g.Log().Errorf(ctx, "创建头像保存错误===%+v", err)
 		return err
 	})
 }
@@ -158,9 +163,11 @@ func (s *sUser) UpdatePassword(ctx context.Context, in model.UserPasswordInput) 
 			Where(dao.User.Columns().Id, service.BizCtx().Get(ctx).User.Id).
 			Count()
 		if err != nil {
+			g.Log().Errorf(ctx, "修改密码错误===%+v", err)
 			return err
 		}
 		if n == 0 {
+			g.Log().Error(ctx, "原始密码错误")
 			return gerror.New(`原始密码错误`)
 		}
 		newPassword := s.EncryptPassword(service.BizCtx().Get(ctx).User.Passport, in.NewPassword)
@@ -178,10 +185,12 @@ func (s *sUser) GetProfileById(ctx context.Context, userId uint) (out *model.Use
 	}
 	// 需要判断nil是否存在,不存在需要判断为空,以防后续nil
 	if out == nil {
+		g.Log().Errorf(ctx, "获取个人信息错误===%+v", err)
 		return nil, nil
 	}
 	out.Stats, err = s.GetUserStats(ctx, userId)
 	if err != nil {
+		g.Log().Errorf(ctx, "获取个人文章数量错误===%+v", err)
 		return nil, err
 	}
 	return
@@ -202,6 +211,7 @@ func (s *sUser) UpdateAvatar(ctx context.Context, in model.UserUpdateAvatarInput
 		}).Where(do.User{
 			Id: in.UserId,
 		}).Update()
+		g.Log().Errorf(ctx, "修改头像错误===%+v", err)
 		return err
 	})
 }
@@ -219,9 +229,11 @@ func (s *sUser) UpdateProfile(ctx context.Context, in model.UserUpdateProfileInp
 			WhereNot(dao.User.Columns().Id, userId).
 			Count()
 		if err != nil {
+			g.Log().Errorf(ctx, "查询昵称数量错误===%+v", err)
 			return err
 		}
 		if n > 0 {
+			g.Log().Errorf(ctx, "昵称：%s已被占用", in.Nickname)
 			return gerror.Newf(`昵称"%s"已被占用`, in.Nickname)
 		}
 		_, err = dao.User.Ctx(ctx).OmitEmpty().Data(in).Where(dao.User.Columns().Id, userId).Update()
@@ -231,6 +243,7 @@ func (s *sUser) UpdateProfile(ctx context.Context, in model.UserUpdateProfileInp
 			sessionUser.Nickname = in.Nickname
 			err = service.Session().SetUser(ctx, sessionUser)
 		}
+		g.Log().Errorf(ctx, "修改个人资料错误===%+v", err)
 		return err
 	})
 
@@ -251,16 +264,19 @@ func (s *sUser) GetList(ctx context.Context, in model.UserGetContentListInput) (
 	// 内容列表
 	out.Content, err = service.Content().GetList(ctx, in.ContentGetListInput)
 	if err != nil {
+		g.Log().Errorf(ctx, "查询内容列表错误===%+v", err)
 		return out, err
 	}
 	// 用户信息
 	out.User, err = service.User().GetProfileById(ctx, in.UserId)
 	if err != nil {
+		g.Log().Errorf(ctx, "查询用户信息错误===%+v", err)
 		return out, err
 	}
 	// 统计信息
 	out.Stats, err = s.GetUserStats(ctx, in.UserId)
 	if err != nil {
+		g.Log().Errorf(ctx, "查询文章数量错误===%+v", err)
 		return out, err
 	}
 	return
@@ -293,6 +309,7 @@ func (s *sUser) GetMessageList(ctx context.Context, in model.UserGetMessageListI
 	}
 	out.Stats, err = s.GetUserStats(ctx, userId)
 	if err != nil {
+		g.Log().Errorf(ctx, "查询用户文章数量错误===%+v", err)
 		return nil, err
 	}
 	return
@@ -308,6 +325,7 @@ func (s *sUser) GetUserStats(ctx context.Context, userId uint) (map[string]int, 
 	statsModel := m.Group(dao.Content.Columns().Type)
 	statsAll, err := statsModel.All()
 	if err != nil {
+		g.Log().Errorf(ctx, "查询文章错误===%+v", err)
 		return nil, err
 	}
 	statsMap := make(map[string]int)
@@ -323,6 +341,7 @@ func (s *sUser) GetUserStats(ctx context.Context, userId uint) (map[string]int, 
 	}
 	record, err := replyModel.One()
 	if err != nil {
+		g.Log().Errorf(ctx, "查询文章回复错误===%+v", err)
 		return nil, err
 	}
 	value := record["total"]
