@@ -2,7 +2,6 @@ package reply
 
 import (
 	"context"
-	"encoding/json"
 	"focus-single/internal/dao"
 	"focus-single/internal/model"
 	"focus-single/internal/model/entity"
@@ -82,11 +81,11 @@ func (s *sReply) DeleteByUserContentId(ctx context.Context, userId, contentId ui
 
 // GetList 获取回复列表
 func (s *sReply) GetList(ctx context.Context, in model.ReplyGetListInput) (out *model.ReplyGetListOutput, err error) {
-
 	out = &model.ReplyGetListOutput{
 		Page: in.Page,
 		Size: in.Size,
 	}
+
 	m := dao.Reply.Ctx(ctx).Fields(model.ReplyListItem{})
 	if in.TargetType != "" {
 		m = m.Where(dao.Reply.Columns().TargetType, in.TargetType)
@@ -98,223 +97,49 @@ func (s *sReply) GetList(ctx context.Context, in model.ReplyGetListInput) (out *
 		m = m.Where(dao.Reply.Columns().UserId, in.UserId)
 	}
 
-	orderDesc := m.Page(in.Page, in.Size).OrderDesc(dao.Content.Columns().Id)
-	/*result, _ := orderDesc.All()
-
-	resultList := result.List()
-	outMarshal2, _ := json.MarshalIndent(resultList, "", "    ")
-	g.Log().Printf(ctx, "最开始的resultList==%s", string(outMarshal2))
-
-	mapList := result.MapKeyUint("id")
-	outMarshal1, _ := json.MarshalIndent(mapList, "", "    ")
-	g.Log().Printf(ctx, "最开始的mapList==%s", string(outMarshal1))
-
-	targetIdList := gutil.ListItemValuesUnique(resultList, "target_id")
-	g.Log().Printf(ctx, "最开始的targetIdList==%v", targetIdList)
-
-	userIdList := gutil.ListItemValuesUnique(resultList, "user_id")
-	g.Log().Printf(ctx, "最开始的userIdList==%v", userIdList)*/
-
-	err = orderDesc.ScanList(&out.List, "Reply")
-	if err != nil {
+	if err = m.Page(in.Page, in.Size).OrderDesc(dao.Content.Columns().Id).ScanList(&out.List, "Reply"); err != nil {
+		g.Log().Errorf(ctx, "获取回复列表错误===%+v", err)
 		return nil, err
 	}
 	if len(out.List) == 0 {
+		g.Log().Info(ctx, "回复列表为空")
 		return nil, nil
 	}
-
-	outMarshal2, _ := json.MarshalIndent(&out.List, "", "    ")
-	g.Log().Printf(ctx, "最开始的out-List==%s", string(outMarshal2))
 
 	userIdList := gutil.ListItemValuesUnique(out.List, "Reply", "UserId")
 	targetIdList := gutil.ListItemValuesUnique(out.List, "Reply", "TargetId")
-	categoryIdList := gutil.ListItemValuesUnique(out.List, "Content", "CategoryId")
 
-	g.Log().Printf(ctx, "最开始的targetIdList2==%v,userIdList2==%v,categoryIdList==%v", targetIdList, userIdList, categoryIdList)
+	g.Log().Printf(ctx, "最开始的targetIdList2==%v,userIdList2==%v", targetIdList, userIdList)
 
 	// 用户信息
-	if err = m.ScanList(&out.List, "Reply"); err != nil {
-		return nil, err
-	}
-	err = dao.User.Ctx(ctx).
+	if err = dao.User.Ctx(ctx).
 		Fields(model.ReplyListUserItem{}).
 		WhereIn(dao.User.Columns().Id, userIdList).
-		ScanList(&out.List, "User", "Reply", "id:UserId")
-	if err != nil {
+		ScanList(&out.List, "User", "Reply", "id:UserId"); err != nil {
+		g.Log().Errorf(ctx, "获取用户信息错误===%+v", err)
 		return nil, err
 	}
 
 	// 内容信息
-	err = dao.Content.Ctx(ctx).
+	if err = dao.Content.Ctx(ctx).
 		Fields(dao.Content.Columns().Id, dao.Content.Columns().Title, dao.Content.Columns().CategoryId).
 		WhereIn(dao.Content.Columns().Id, targetIdList).
-		ScanList(&out.List, "Content", "Reply", "id:TargetId")
-	if err != nil {
+		ScanList(&out.List, "Content", "Reply", "id:TargetId"); err != nil {
+		g.Log().Errorf(ctx, "获取回复内容错误===%+v", err)
 		return nil, err
 	}
 
-	if len(categoryIdList) == 0 {
-		categoryIdList = gutil.ListItemValuesUnique(&out.List, "Content", "CategoryId")
-	}
+	// 现场才能正常获取分类ID切片
+	categoryIdList := gutil.ListItemValuesUnique(out.List, "Content", "CategoryId")
+	g.Log().Printf(ctx, "提取到的categoryIdList==%v", categoryIdList)
 
 	// 类别信息
-	err = dao.Category.Ctx(ctx).
+	if err = dao.Category.Ctx(ctx).
 		Fields(model.ContentListCategoryItem{}).
 		WhereIn(dao.Category.Columns().Id, categoryIdList).
-		ScanList(&out.List, "Category", "Content", "id:CategoryId")
-	if err != nil {
+		ScanList(&out.List, "Category", "Content", "id:CategoryId"); err != nil {
+		g.Log().Errorf(ctx, "获取分类信息错误===%+v", err)
 		return nil, err
 	}
-
-	/*outList, _ := json.Marshal(&out.List)
-	g.Log().Printf(ctx, "最开始的outList==%s", string(outList))
-
-	// 用户信息
-	userMap := make(map[uint]*model.ReplyListUserItem)
-	var users []*model.ReplyListUserItem
-	if len(userIdList) > 0 {
-		err = dao.User.Ctx(ctx).
-			Fields(model.ReplyListUserItem{}).
-			//Where(dao.User.Columns().Id+" IN(?)", userIds).
-			WhereIn(dao.User.Columns().Id, userIdList).
-			Scan(&users)
-		if err != nil {
-			return nil, err
-		}
-		for _, user := range users {
-			userMap[user.Id] = user
-		}
-	}
-
-	// 内容信息
-	contentMap := make(map[uint]*model.ContentListItem)
-	var contents []*model.ContentListItem
-	if len(targetIdList) > 0 {
-		//gp := []string{"id", "type", "user_id", "title", "category_id", "content"}
-		err = dao.Content.Ctx(ctx).
-			Fields(
-				dao.Content.Columns().Id,
-				dao.Content.Columns().Type,
-				dao.Content.Columns().CategoryId,
-				dao.Content.Columns().UserId,
-				dao.Content.Columns().Title,
-				dao.Content.Columns().Content,
-				dao.Content.Columns().Sort,
-			).
-			//Where(dao.Content.Columns().Id+" IN(?)", targetIdList).
-			//.Group(gp...).
-			WhereIn(dao.Content.Columns().Id, targetIdList).
-			Scan(&contents)
-		if err != nil {
-			return nil, err
-		}
-		for _, content := range contents {
-			contentMap[content.Id] = content
-		}
-	}
-
-	// 分类信息
-	categoryIds := gutil.ListItemValuesUnique(contents, "CategoryId")
-	categoryMap := make(map[uint]*model.ContentListCategoryItem)
-	if len(categoryIds) > 0 {
-		var categories []*model.ContentListCategoryItem
-		err = dao.Category.Ctx(ctx).
-			Fields(
-				dao.Category.Columns().Id,
-				dao.Category.Columns().Name,
-				dao.Category.Columns().ContentType,
-				dao.Category.Columns().Thumb,
-			).
-			WhereIn(dao.Category.Columns().Id, categoryIds).
-			Scan(&categories)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, category := range categories {
-			categoryMap[category.Id] = category
-		}
-	}
-
-	userMarshal, _ := json.Marshal(userMap)
-	contentMarshal, _ := json.Marshal(contentMap)
-	categoryMarshal, _ := json.Marshal(categoryMap)
-
-	g.Log().Printf(ctx, "用户信息Map===%s", string(userMarshal))
-	g.Log().Printf(ctx, "回复内容Map===%s", string(contentMarshal))
-	g.Log().Printf(ctx, "分类信息Map===%s", string(categoryMarshal))
-
-	for _, item := range out.List {
-		itemMarshal, _ := json.MarshalIndent(item, "", "    ")
-		g.Log().Printf(ctx, "集合选项item===%s", itemMarshal)
-		userId := item.Reply.UserId
-		targetId := item.Reply.TargetId
-		contentId := item.Reply.Id
-		g.Log().Printf(ctx, "用户ID===%d", userId)
-		g.Log().Printf(ctx, "内容ID===%d", targetId)
-		g.Log().Printf(ctx, "回复ID===%d", contentId)
-		item.User = userMap[userId]
-		item.Content = contentMap[targetId]
-	}
-
-	marshal3, _ := json.MarshalIndent(&out, "", "    ")
-	g.Log().Printf(ctx, "out===%s", string(marshal3))*/
-	return out, nil
-}
-
-// 获取回复列表
-func (s *sReply) GetList_old(ctx context.Context, in model.ReplyGetListInput) (out *model.ReplyGetListOutput, err error) {
-	out = &model.ReplyGetListOutput{
-		Page: in.Page,
-		Size: in.Size,
-	}
-	m := dao.Reply.Ctx(ctx).Fields(model.ReplyListItem{})
-	if in.TargetType != "" {
-		m = m.Where(dao.Reply.Columns().TargetType, in.TargetType)
-	}
-	if in.TargetId > 0 {
-		m = m.Where(dao.Reply.Columns().TargetId, in.TargetId)
-	}
-	if in.UserId > 0 {
-		m = m.Where(dao.Reply.Columns().UserId, in.UserId)
-	}
-
-	err = m.Page(in.Page, in.Size).OrderDesc(dao.Content.Columns().Id).ScanList(&out.List, "Reply")
-	if err != nil {
-		return nil, err
-	}
-	if len(out.List) == 0 {
-		return nil, nil
-	}
-	// User
-	if err = m.ScanList(&out.List, "Reply"); err != nil {
-		return nil, err
-	}
-	err = dao.User.Ctx(ctx).
-		Fields(model.ReplyListUserItem{}).
-		Where(dao.User.Columns().Id, gutil.ListItemValuesUnique(out.List, "Reply", "UserId")).
-		ScanList(&out.List, "User", "Reply", "id:UserId")
-	if err != nil {
-		return nil, err
-	}
-
-	// Content
-	err = dao.Content.Ctx(ctx).
-		Fields(dao.Content.Columns().Id, dao.Content.Columns().Title, dao.Content.Columns().CategoryId).
-		Where(dao.Content.Columns().Id, gutil.ListItemValuesUnique(out.List, "Reply", "TargetId")).
-		ScanList(&out.List, "Content", "Reply", "id:TargetId")
-	if err != nil {
-		return nil, err
-	}
-
-	// Category
-	err = dao.Category.Ctx(ctx).
-		Fields(model.ContentListCategoryItem{}).
-		Where(dao.Category.Columns().Id, gutil.ListItemValuesUnique(out.List, "Content", "CategoryId")).
-		ScanList(&out.List, "Category", "Content", "id:CategoryId")
-	if err != nil {
-		return nil, err
-	}
-
 	return out, nil
 }
