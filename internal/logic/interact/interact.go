@@ -57,7 +57,7 @@ func (s *sInteract) Zan(ctx context.Context, targetType string, targetId uint) e
 			if customCtx == nil || customCtx.User == nil {
 				return nil
 			}
-			_, err := dao.Interact.Ctx(ctx).Data(do.Interact{
+			/*_, err := dao.Interact.Ctx(ctx).TX(tx).Data(do.Interact{
 				UserId:     customCtx.User.Id,
 				TargetId:   targetId,
 				TargetType: targetType,
@@ -71,9 +71,9 @@ func (s *sInteract) Zan(ctx context.Context, targetType string, targetId uint) e
 
 			if err != nil {
 				return err
-			}
+			}*/
 
-			r, err := dao.Interact.Ctx(ctx).Data(do.Interact{
+			r, err := dao.Interact.Ctx(ctx).TX(tx).Data(do.Interact{
 				UserId:     customCtx.User.Id,
 				TargetId:   targetId,
 				TargetType: targetType,
