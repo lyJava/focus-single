@@ -64,3 +64,10 @@ type ContentDeleteReq struct {
 	Id     uint `v:"min:1#请选择需要删除的内容" dc:"内容id"`
 }
 type ContentDeleteRes struct{}
+
+type ReplayAdoptReq struct {
+	g.Meta  `path:"/content/adopt/reply" method: post summary: "采纳回复接口"`
+	Id      uint `json:"id"  v:"required#问答ID错误" dc:"对应问答ID"`
+	ReplyId uint `json:"replyId" v:"required#回复ID错误" dc:"对应回复ID"`
+}
+type ReplayAdoptRes struct{}
