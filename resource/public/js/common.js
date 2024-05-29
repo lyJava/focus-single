@@ -374,6 +374,7 @@ async function deleteConfirmationPromise(url, id) {
  *
  * @param url     请求URL
  * @param id      内容ID
+ * @param type    请求类型
  * @param replyId 回复ID
  * @param msg     成功提示信息
  * @returns {Promise<void>}
