@@ -26,7 +26,7 @@
                     <div class="float-left">
                         <span class="badge badge-primary">{{$item.Category.Name}}</span>
                         <span class="gf-list-item-title">
-                            <a href="/{{$item.Category.ContentType}}/{{$item.Content.Id}}" target="_blank" style="color: #222;">{{$item.Content.Title}}</a>
+                            <a href="/{{$item.Category.ContentType}}/{{$item.Content.Id}}" target="_self" style="color: #222;">{{$item.Content.Title}}</a>
                         </span>
                     </div>
                     <div class="float-right">
@@ -56,7 +56,7 @@
     <div class="col-md-2">
 
         <div class="card gf-card" style="background: #fff;padding: 10px;">
-            <a class="btn btn-primary" href="/content/create?type={{.ContentType}}">发布内容</a>
+            <a class="btn btn-primary" href="/content/create?type={{.ContentType}}&cate={{.Query.cate}}" target="_blank">发布内容2</a>
         </div>
 
         {{include "index/index/page_link.html" .}}

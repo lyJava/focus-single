@@ -19,9 +19,11 @@
                     <label class="col-sm-1 col-form-label required" for="categoryId">栏目</label>
                     <div class="col-sm-10">
                         <div class="form-group">
+                            <!--通过URL上面的参数保证下拉选中对应的-->
                             <select class="form-control" name="categoryId" id="categoryId">
+                                {{ $cate := .Query.cate }}
                                 {{range $index, $item := .BuildIn.CategoryTree .ContentType}}
-                                <option value="{{$item.Id}}">{{$item.Name}}</option>
+                                    <option value="{{$item.Id}}" {{if eq (printf "%d" $item.Id) $cate}}selected{{end}}>{{$item.Name}}</option>
                                 {{end}}
                             </select>
                         </div>
