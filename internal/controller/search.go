@@ -2,13 +2,12 @@ package controller
 
 import (
 	"context"
-
 	"focus-single/api/v1"
 	"focus-single/internal/model"
 	"focus-single/internal/service"
 )
 
-// 搜索管理
+// Search 搜索管理
 var Search = cSearch{}
 
 type cSearch struct{}

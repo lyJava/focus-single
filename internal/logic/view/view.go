@@ -3,6 +3,7 @@ package view
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gfile"
@@ -201,7 +202,9 @@ func (s *sView) Render500(ctx context.Context, data ...model.View) {
 
 // 获取视图存储目录
 func (s *sView) getViewFolderName(ctx context.Context) string {
-	return gstr.Split(g.Cfg().MustGet(ctx, "viewer.indexLayout").String(), "/")[0]
+	viewPath := gstr.Split(g.Cfg().MustGet(ctx, "viewer.indexLayout").String(), "/")[0]
+	log.Printf("视图存储目录:%s", viewPath)
+	return viewPath
 }
 
 // 获取自动设置的MainTpl
@@ -228,5 +231,6 @@ func (s *sView) getDefaultMainTpl(ctx context.Context) string {
 		// 默认首页内容
 		mainTpl = viewFolderPrefix + "/index/index.html"
 	}
+	log.Printf("设置的MainTpl:%s", mainTpl)
 	return gstr.TrimLeft(mainTpl, "/")
 }

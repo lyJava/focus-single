@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"log"
 
 	"focus-single/api/v1"
 	"focus-single/internal/model"
@@ -31,6 +32,7 @@ func (a *cReply) GetListContent(ctx context.Context, req *v1.ReplyGetListContent
 	return &v1.ReplyGetListContentRes{Content: tplContent}, nil
 }
 
+// Create 回复创建
 func (a *cReply) Create(ctx context.Context, req *v1.ReplyCreateReq) (res *v1.ReplyCreateRes, err error) {
 	err = service.Reply().Create(ctx, model.ReplyCreateInput{
 		Title:      req.Title,
@@ -43,7 +45,11 @@ func (a *cReply) Create(ctx context.Context, req *v1.ReplyCreateReq) (res *v1.Re
 	return
 }
 
+// Delete 回复删除
 func (a *cReply) Delete(ctx context.Context, req *v1.ReplyDeleteReq) (res *v1.ReplyDeleteRes, err error) {
 	err = service.Reply().Delete(ctx, req.Id)
+	if err == nil {
+		log.Println("回复删除成功")
+	}
 	return
 }
