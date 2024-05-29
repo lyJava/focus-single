@@ -30,6 +30,14 @@ body {
     margin: 0;
 }
 
+.top_header {
+    background: linear-gradient(to right, #8dbce6, #91c7a6);
+}
+
+.top_header a {
+    font-size: 16px;
+}
+
 main .row {
     margin-left: 0 !important;
     margin-right: 0 !important;
