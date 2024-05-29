@@ -5,10 +5,11 @@
     </button>
 
     <a class="navbar-brand " href="/">
-        <img src="/images/logo.png" width="30" height="30">
+        <img src="/images/logo.png" alt="" width="30" height="30" />
     </a>
 
-    <div class="collapse navbar-collapse" id="gf-navbar-toggle">
+    <!-- 该div元素一只保持在最顶端显示 -->
+    <div class="collapse navbar-collapse fixed-top" id="gf-navbar-toggle" style="background: linear-gradient(135deg, #b5d0e9, #76c7c0, #ffffff)">
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
             {{range $index, $item := .BuildIn.TopMenus}}
             <li class="nav-item {{if $item.Active }}active{{end}} {{if $item.Items}}dropdown{{end}}">
@@ -27,7 +28,7 @@
             <li class="nav-item">
                 <form class="form-inline search-form" method="get" action="/search">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="请输入搜索内容" name="key" value="{{.Query.key}}">
+                        <input type="text" class="form-control" placeholder="请输入搜索内容" name="key" value="{{.Query.key}}" />
                     </div>
                 </form>
             </li>
@@ -48,7 +49,7 @@
             </div>
             <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img class="nav-avatar" src="{{.Context.User.Avatar}}">
+                    <img class="nav-avatar" src="{{.Context.User.Avatar}}" alt="">
                     {{.Context.User.Nickname}}
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">

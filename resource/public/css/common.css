@@ -5,9 +5,8 @@
     box-sizing: inherit;
 }
 
-
 .red {
-    color: red
+    color: red;
 }
 
 .float-left {
@@ -19,18 +18,43 @@
 }
 
 .container-fluid {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     padding: 0 !important;
 }
 
 body {
     color: #636b6f;
     background: #e5e5e5;
+    margin: 0;
 }
 
 main .row {
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
+
+.main-content {
+    flex: 1;
+    padding-bottom: 20px; /* 添加底部间距，防止内容和 footer 紧贴 */
+}
+
+.footer {
+    height: 5vh;
+    background: radial-gradient(circle, #b5d0e9, #76c7c0); /* 径向渐变 */
+    display: flex;
+    align-items: center;  /* 垂直居中 */
+    justify-content: center;  /* 水平居中 */
+    padding: -10px 0;
+}
+
+.footer-content {
+    text-align: center;
+    color: #fff;  /* 确保文本颜色与背景对比良好 */
+}
+
+/* 其他 CSS 样式... */
 
 .badge {
     background-color: #ecf5ff;
@@ -442,7 +466,7 @@ footer .list-group-item {
 }
 
 .gf-person .gf-list-item {
-    border: 0px;
+    border: 0;
     border-bottom: 1px solid #e5e5e5;
 }
 
