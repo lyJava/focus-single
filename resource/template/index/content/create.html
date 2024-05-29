@@ -10,16 +10,16 @@
             <form id="contentForm" action="/content/create" method="post">
                 <input type="hidden" value="{{.ContentType}}" name="type">
                 <div class="form-group row">
-                    <label class="col-sm-1 col-form-label required">标题</label>
+                    <label class="col-sm-1 col-form-label required" for="title">标题</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" value="" name="title" placeholder="请输入标题"/>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题"/>
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label class="col-sm-1 col-form-label required">栏目</label>
+                    <label class="col-sm-1 col-form-label required" for="categoryId">栏目</label>
                     <div class="col-sm-10">
                         <div class="form-group">
-                            <select class="form-control" name="categoryId">
+                            <select class="form-control" name="categoryId" id="categoryId">
                                 {{range $index, $item := .BuildIn.CategoryTree .ContentType}}
                                 <option value="{{$item.Id}}">{{$item.Name}}</option>
                                 {{end}}
