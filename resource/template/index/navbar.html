@@ -4,12 +4,13 @@
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <a class="navbar-brand " href="/">
-        <img src="/images/logo.png" alt="" width="30" height="30" />
-    </a>
+
 
     <!-- 该div元素一只保持在最顶端显示 -->
     <div class="collapse navbar-collapse fixed-top" id="gf-navbar-toggle" style="background: linear-gradient(135deg, #b5d0e9, #76c7c0, #ffffff)">
+        <a class="navbar-brand justify-content-center m-2" href="/">
+            <img src="/images/logo.png" alt="" style="width: 30px;height: 30px;" />
+        </a>
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
             {{range $index, $item := .BuildIn.TopMenus}}
             <li class="nav-item {{if $item.Active }}active{{end}} {{if $item.Items}}dropdown{{end}}">
