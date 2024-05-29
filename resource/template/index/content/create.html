@@ -135,12 +135,12 @@ jQuery(function($) {
                 required: "请选择栏目"
             }
         },
-        submitHandler: function(form) {
+        submitHandler: async function (form) {
             let submit = $('button[type=submit]')
             if (submit.attr('disabled') == 'true') {
                 swal({
-                    text:   "请勿重复提交",
-                    icon:   "warning",
+                    text: "请勿重复提交",
+                    icon: "warning",
                     button: "确定",
                 });
                 return
@@ -149,8 +149,8 @@ jQuery(function($) {
             let value = editor.getValue()
             if (value.length < 10) {
                 swal({
-                    text:   "请输入内容",
-                    icon:   "warning",
+                    text: "请输入内容",
+                    icon: "warning",
                     button: "确定",
                 });
                 return
@@ -158,7 +158,8 @@ jQuery(function($) {
             $('textarea[name=content]').val(value)
 
             submit.attr('disabled', 'true');
-            $(form).ajaxSubmit({
+            await submitContentForm($("#contentForm"), "{{.ContentType}}");
+            /*$(form).ajaxSubmit({
                 dataType: 'json',
                 success:  function (r, textStatus) {
                     if (r.code <= 0) {
@@ -182,7 +183,7 @@ jQuery(function($) {
                         });
                     }
                 }
-            });
+            });*/
             submit.removeAttr('disabled');
         },
         errorPlacement: function (error, element) {

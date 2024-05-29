@@ -227,19 +227,21 @@ jQuery(function ($) {
 /**
  * 创建弹窗(异步)
  *
- * @param title
- * @param text
- * @param icon
- * @param dangerMode
+ * @param title      标题
+ * @param text       文本信息
+ * @param icon       消息类型
+ * @param buttons    按钮数组
+ * @param dangerMode 是否红色提醒
  * @returns {Promise<unknown>}
  */
-function newSwal(title, text, icon, dangerMode) {
+function newSwal(title, text, icon, buttons, dangerMode) {
     return new Promise((resolve, reject) => {
         swal({
             title: title,
             text: text,
             icon: icon,
-            buttons: ["取消", "确定"],
+            //buttons: ["取消", "确定"],
+            buttons: buttons,
             dangerMode: dangerMode
         }).then((value) => {
             resolve(value);
@@ -349,7 +351,7 @@ function deleteConfirmation(url, id) {
  * @returns {Promise<void>} 返回异步
  */
 async function deleteConfirmationPromise(url, id) {
-    await newSwal("删除回复", "您确定删除回复吗？", "warning", true).then(async (value) => {
+    await newSwal("删除回复", "您确定删除回复吗？", "warning", ["取消", "确定"], true).then(async (value) => {
         if (value) {
             await ajaxPromise(url, "DELETE", {id}, "删除成功")
                 .then(async (message) => {
@@ -408,6 +410,52 @@ async function submitReply(url, type, param, jBtnEle, message) {
                     location.reload();
                 });
         }).catch((message) => {
-            swal({text: message, icon: "warning", button: "确定"});
+            swalSingleBtn("", message, "warning", "确定", false);
         });
+}
+
+/**
+ * ajax的表单提交(promise)
+ *
+ * @param form jQuery表单元素对象
+ * @returns {Promise<unknown>}
+ */
+function ajaxSubmitPromise(form) {
+    return new Promise((resolve, reject) => {
+        form.ajaxSubmit({
+            dataType: "json",
+            success: function (r) {
+                if (r.code === 0) {
+                    resolve(r);
+                } else {
+                    reject(r);
+                }
+            },
+            error: function (xhr, status, error) {
+                reject("请求失败：" + error);
+            }
+        });
+    });
+}
+
+/**
+ * 文章发布表单提交
+ *
+ * @param jForm       jQuery表单元素对象
+ * @param contentType 内容类型
+ * @returns {Promise<void>}
+ */
+async function submitContentForm(jForm, contentType) {
+    await ajaxSubmitPromise(jForm).then(async (resp) => {
+        await newSwal("发布成功", resp.message, "success", ["继续发布", "查看详情"], false).then((val) => {
+            if (val) {
+                const dataId = resp.data.contentId;
+                window.location.href = `/${contentType}/${dataId}`
+            } else {
+                window.location.reload();
+            }
+        }).catch((resp) => {
+            swalSingleBtn("", resp.message, "warning", "确定", false);
+        });
+    });
 }
