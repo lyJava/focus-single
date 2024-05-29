@@ -3,7 +3,7 @@
 </style>
 <!--- main --->
 <div class="row gf-list">
-    <div class="col-md-9">
+    <div class="col-md-10">
         <ul class="list-group">
             <li class="list-group-item">
                 <a class="btn btn-link {{if not $.Query.cate}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm" href="/{{.ContentType}}?sort={{.Query.sort}}">全部</a>
@@ -26,7 +26,7 @@
                     <div class="float-left">
                         <span class="badge badge-primary">{{$item.Category.Name}}</span>
                         <span class="gf-list-item-title">
-                            <a  href="/{{$item.Category.ContentType}}/{{$item.Content.Id}}" target="_blank" style="color: #222;">{{$item.Content.Title}}</a>
+                            <a href="/{{$item.Category.ContentType}}/{{$item.Content.Id}}" target="_blank" style="color: #222;">{{$item.Content.Title}}</a>
                         </span>
                     </div>
                     <div class="float-right">
@@ -39,6 +39,7 @@
                         <span style="font-size: 12px;color: #ccc;">{{$item.Content.CreatedAt | $.BuildIn.FormatTime}}</span>
                     </div>
                 </div>
+
             </li>
             {{end}}
 
@@ -52,7 +53,7 @@
         </ul>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-2">
 
         <div class="card gf-card" style="background: #fff;padding: 10px;">
             <a class="btn btn-primary" href="/content/create?type={{.ContentType}}">发布内容</a>
@@ -61,3 +62,7 @@
         {{include "index/index/page_link.html" .}}
     </div>
 </div>
+
+<script>
+    console.log("11111")
+</script>
