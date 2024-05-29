@@ -54,8 +54,9 @@ type ContentSearchOutputItem struct {
 
 // ContentGetDetailOutput 查询详情结果
 type ContentGetDetailOutput struct {
-	Content *entity.Content `json:"content"`
-	User    *entity.User    `json:"user"`
+	Content  *entity.Content  `json:"content"`
+	User     *entity.User     `json:"user"`
+	Category *entity.Category `json:"category"`
 }
 
 // ContentCreateUpdateBase 创建/修改内容基类

@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="/plugin/vditor/dist/index.css"/>
 <script src="/plugin/vditor/dist/index.min.js" defer></script>
 <div class="row gf-content">
-    <div class="col-md-9">
+    <div class="col-md-10">
         <div class="gf-content-show">
             {{if .BreadCrumb}}
             <nav aria-label="breadcrumb" class="gf-content-breadcrumb ">
@@ -13,6 +13,7 @@
                         {{if $item.Url}}
                         <a href="{{$item.Url}}">{{$item.Name}}</a>
                         {{else}}
+                        <!--内容详情-->
                         {{$item.Name}}
                         {{end}}
                     </li>
@@ -30,6 +31,7 @@
                 <span class="icon iconfont">&#xe6ab;</span>
                 {{.Data.Content.ReplyCount}} &nbsp; / &nbsp;
 
+                <!--赞-->
                 <a href="javascript:void(0);" data-type="content"
                    onclick="javascript:gf.content.zan(this, {{.Data.Content.Id}})">
                     {{if .BuildIn.DidIZan "content" .Data.Content.Id}}
@@ -42,6 +44,7 @@
 
                 &nbsp; / &nbsp;
 
+                <!--踩-->
                 <a href="javascript:void(0);" data-type="content"
                    onclick="javascript:gf.content.cai(this, {{.Data.Content.Id}})">
                     {{if .BuildIn.DidICai "content" .Data.Content.Id}}
@@ -57,7 +60,7 @@
                 {{if .Context.User}}
                 {{if eq .Data.Content.UserId .Context.User.Id}}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="/content/update/{{.Data.Content.Id}}">编辑</a>
+                <a href="/content/update/{{.Data.Content.Id}}" title="点击进入编辑">编辑</a>
                 {{end}}
                 {{end}}
             </div>
@@ -84,7 +87,7 @@
         </div>
 
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="gf-content-user">
             <div>
                 <a href="/user/{{.Data.User.Id}}">
@@ -110,6 +113,7 @@
     </div>
 </div>
 <script type="application/javascript">
+    console.log("进入了详情页面")
     gf.content = {
         // 赞
         zan: function (elem, id) {
@@ -138,14 +142,14 @@
         adopted: function (id) {
             jQuery.ajax({
                 type: 'POST',
-                url: '/content/adopt-reply',
+                url: '/content/adopt/reply',
                 data: {
                     id: "{{.Data.Content.Id}}",
                     replyId: id,
                 },
                 success: function (r) {
                     if (r.code === 0) {
-                        swal({text: "采纳成功", type: "success", button: "确定"}).then(
+                        swal({text: "采纳成功", icon: "success", button: "确定"}).then(
                         function(){
                             location.reload(); // 刷新页面同步回复统计
                         });
@@ -167,13 +171,13 @@
 
                 jQuery.ajax({
                     type: 'DELETE',
-                    url: '/reply',
+                    url: '/reply/delete',
                     data: {
                         id: id,
                     },
                     success: function (r) {
                         if (r.code === 0) {
-                            swal({text: "删除成功", type: "success", button: "确定"}).then(
+                            swal({text: "删除成功", icon: "success", button: "确定"}).then(
                                 function(){
                                     location.reload(); // 刷新页面同步回复统计
                                 });
@@ -323,7 +327,7 @@
 
             if (!editor.getHTML()) return;
             $('button[type=submit]').attr('disabled', 'true');
-            var pid=$("#reply-btn").attr("data-reply-id");
+            const pid = $("#reply-btn").attr("data-reply-id");
             jQuery.ajax({
                 type: 'PUT',
                 url: '/reply',
@@ -336,7 +340,7 @@
                 success: function (r) {
                     $('button[type=submit]').removeAttr('disabled');
                     if (r.code === 0) {
-                        swal({text: "评论成功", type: "success", button: "确定"}).then(
+                        swal({text: "评论成功", icon: "success", button: "确定"}).then(
                         function(){
                             location.reload(); // 刷新页面同步回复统计
                         });

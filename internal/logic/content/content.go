@@ -164,7 +164,7 @@ func (s *sContent) Search(ctx context.Context, in model.ContentSearchInput) (out
 		out.Stats[v["type"].String()] = v["total"].Int()
 	}
 	// Content
-	if err := all.ScanList(&out.List, "Content"); err != nil {
+	if err = all.ScanList(&out.List, "Content"); err != nil {
 		return nil, err
 	}
 	// Category
@@ -197,8 +197,14 @@ func (s *sContent) GetDetail(ctx context.Context, id uint) (out *model.ContentGe
 	if out.Content == nil {
 		return nil, nil
 	}
-	err = dao.User.Ctx(ctx).Where(dao.Content.Columns().Id, out.Content.UserId).Scan(&out.User)
-	if err != nil {
+	if err = dao.User.Ctx(ctx).Where(dao.Content.Columns().Id, out.Content.UserId).Scan(&out.User); err != nil {
+		return nil, err
+	}
+
+	// 查询分类数据
+	if err = dao.Category.Ctx(ctx).
+		Fields(dao.Category.Columns().Id, dao.Category.Columns().Name, dao.Category.Columns().ContentType).
+		Where(dao.Category.Columns().Id, out.Content.CategoryId).Scan(&out.Category); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -222,22 +228,36 @@ func (s *sContent) Create(ctx context.Context, in model.ContentCreateInput) (out
 	var lastRowId int64
 
 	if sqlType == "mysql" {
-		lastRowId, err = dao.Content.Ctx(ctx).Data(in).InsertAndGetId()
+		err = dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+			lastRowId, err = dao.Content.Ctx(ctx).TX(tx).Data(in).InsertAndGetId()
+			if err != nil {
+				log.Printf("发布内容出错===%+v", err)
+				return err
+			}
+			return nil
+		})
 		if err != nil {
 			log.Printf("发布内容出错===%+v", err)
 			return out, err
 		}
+		return out, nil
 	}
 
 	if sqlType == "pgsql" {
 		insertSql := `INSERT INTO gf_content(user_id, type, category_id,  title, content, created_at, updated_at) 
     					VALUES ($1, $2, $3, $4,$5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id`
-		query, err := g.DB().Ctx(ctx).GetOne(ctx, insertSql, in.UserId, in.Type, in.CategoryId, in.Title, in.Content)
+		err = g.DB().Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+			query, err := g.DB().Ctx(ctx).GetOne(ctx, insertSql, in.UserId, in.Type, in.CategoryId, in.Title, in.Content)
+			if err != nil {
+				log.Printf("发布内容出错===%+v", err)
+				return err
+			}
+			lastRowId = cast.ToInt64(query.Map()["id"])
+			return nil
+		})
 		if err != nil {
-			log.Printf("发布内容出错===%+v", err)
-			return out, err
+			return model.ContentCreateOutput{}, err
 		}
-		lastRowId = cast.ToInt64(query.Map()["id"])
 	}
 
 	log.Printf("发布内容返回===%d", lastRowId)
@@ -252,9 +272,7 @@ func (s *sContent) Update(ctx context.Context, in model.ContentUpdateInput) erro
 		if err := ghtml.SpecialCharsMapOrStruct(in); err != nil {
 			return err
 		}
-		_, err := dao.Content.
-			Ctx(ctx).
-			TX(tx).
+		_, err := dao.Content.Ctx(ctx).TX(tx).
 			Data(in).
 			FieldsEx(dao.Content.Columns().Id).
 			Where(dao.Content.Columns().Id, in.Id).
@@ -292,7 +310,9 @@ func (s *sContent) Delete(ctx context.Context, id uint) error {
 // AddViewCount 浏览次数增加
 func (s *sContent) AddViewCount(ctx context.Context, id uint, count int) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.Content.Ctx(ctx).Where(dao.Content.Columns().Id, id).Increment(dao.Content.Columns().ViewCount, count)
+		_, err := dao.Content.Ctx(ctx).TX(tx).
+			Where(dao.Content.Columns().Id, id).
+			Increment(dao.Content.Columns().ViewCount, count)
 		if err != nil {
 			return err
 		}
@@ -303,10 +323,13 @@ func (s *sContent) AddViewCount(ctx context.Context, id uint, count int) error {
 // AddReplyCount 回复次数增加
 func (s *sContent) AddReplyCount(ctx context.Context, id uint, count int) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.Content.Ctx(ctx).Where(dao.Content.Columns().Id, id).Increment(dao.Content.Columns().ReplyCount, count)
+		_, err := dao.Content.Ctx(ctx).TX(tx).
+			Where(dao.Content.Columns().Id, id).
+			Increment(dao.Content.Columns().ReplyCount, count)
 		if err != nil {
 			return err
 		}
+		log.Println("更新回复次数成功")
 		return nil
 	})
 }
@@ -317,7 +340,7 @@ func (s *sContent) AdoptReply(ctx context.Context, id uint, replyID uint) error 
 		_, err := dao.Content.Ctx(ctx).TX(tx).
 			Data(dao.Content.Columns().AdoptedReplyId, replyID).
 			Where(dao.Content.Columns().UserId, service.BizCtx().Get(ctx).User.Id).
-			WherePri(id).
+			Where(dao.Content.Columns().Id, id).
 			Update()
 		if err != nil {
 			return err
@@ -331,7 +354,7 @@ func (s *sContent) UnacceptedReply(ctx context.Context, id uint) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		_, err := dao.Content.Ctx(ctx).TX(tx).
 			Data(dao.Content.Columns().AdoptedReplyId, 0).
-			WherePri(id).
+			WherePri(dao.Content.Columns().Id, id).
 			Update()
 		if err != nil {
 			return err
