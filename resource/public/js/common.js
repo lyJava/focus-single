@@ -223,3 +223,191 @@ jQuery(function ($) {
         min:         $.validator.format("请输入不小于 {0} 的数值")
     });
 })
+
+/**
+ * 创建弹窗(异步)
+ *
+ * @param title
+ * @param text
+ * @param icon
+ * @param dangerMode
+ * @returns {Promise<unknown>}
+ */
+function newSwal(title, text, icon, dangerMode) {
+    return new Promise((resolve, reject) => {
+        swal({
+            title: title,
+            text: text,
+            icon: icon,
+            buttons: ["取消", "确定"],
+            dangerMode: dangerMode
+        }).then((value) => {
+            resolve(value);
+        }).catch((error) => {
+            reject(error);
+        });
+    });
+}
+
+/**
+ * 创建弹窗(单按钮～异步)
+ *
+ * @param title      标题
+ * @param text       信息文本
+ * @param icon       图标类型
+ * @param button     按钮文本
+ * @param dangerMode 是否显示危险(为true按钮会变成红色)
+ * @returns {Promise<unknown>}
+ */
+function swalSingleBtn(title, text, icon, button, dangerMode) {
+    return new Promise((resolve, reject) => {
+        swal({
+            title: title,
+            text: text,
+            icon: icon,
+            button: button,
+            dangerMode: dangerMode
+        }).then((value) => {
+            resolve(value);
+        }).catch((error) => {
+            reject(error);
+        });
+    });
+}
+
+function deleteReplyFunc(url, id, successCallback, errorCallback) {
+    jQuery.ajax({
+        type: 'DELETE',
+        url: url,
+        data: {
+            id: id,
+        },
+        success: function (r) {
+            if (r.code === 0) {
+                successCallback("删除成功");
+            } else {
+                errorCallback(r.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            errorCallback("请求失败：" + error);
+        }
+    });
+}
+
+function ajaxPromise(url, type, param, message) {
+    return new Promise((resolve, reject) => {
+        jQuery.ajax({
+            type: type,
+            url: url,
+            data: param,
+            success: function (r) {
+                if (r.code === 0) {
+                    resolve(message);
+                } else {
+                    reject(r.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                reject("请求失败：" + error);
+            }
+        });
+    });
+}
+
+function deleteConfirmation(url, id) {
+    swal({
+        title: "删除回复",
+        text: "您确定删除回复吗？",
+        icon: "warning",
+        buttons: ["取消", "确定"],
+        dangerMode: true,
+    }).then((value) => {
+        if (value) {
+            deleteReplyFunc(url, id,
+                function (message) {
+                    swal({text: message, icon: "success", button: "确定"}).then(
+                        function () {
+                            location.reload(); // 刷新页面同步回复统计
+                        });
+                },
+                function (message) {
+                    swal({text: message, icon: "warning", button: "确定"});
+                }
+            );
+        } else {
+            console.log("删除回复取消了");
+        }
+    });
+}
+
+/**
+ * 删除回复
+ *
+ * @param url 请求URL
+ * @param id 回复ID
+ * @returns {Promise<void>} 返回异步
+ */
+async function deleteConfirmationPromise(url, id) {
+    await newSwal("删除回复", "您确定删除回复吗？", "warning", true).then(async (value) => {
+        if (value) {
+            await ajaxPromise(url, "DELETE", {id}, "删除成功")
+                .then(async (message) => {
+                    await swalSingleBtn("", message, "success", "确定", false).then(() => {
+                        // 刷新页面同步回复统计
+                        location.reload();
+                    });
+                })
+                .catch((message) => {
+                    swal({text: message, icon: "warning", button: "确定"});
+                });
+        } else {
+            console.log("删除回复取消了");
+        }
+    });
+}
+
+/**
+ * 采纳回复
+ *
+ * @param url     请求URL
+ * @param id      内容ID
+ * @param replyId 回复ID
+ * @param msg     成功提示信息
+ * @returns {Promise<void>}
+ */
+async function adoptReply(url, type, id, replyId, msg) {
+    await ajaxPromise(url, type, {id, replyId}, msg)
+        .then(async (message) => {
+            await swalSingleBtn("", message, "success", "确定", false).then(() => {
+                // 刷新页面同步回复统计
+                location.reload();
+            });
+        }).catch((message) => {
+            swalSingleBtn("", message, "warning", "确定", false);
+        });
+}
+
+/**
+ * 提交评论
+ *
+ * @param url     请求URL
+ * @param type    请求类型
+ * @param param   请求参数
+ * @param jBtnEle 提交按钮(jQuery元素)
+ * @param message 提示信息
+ * @returns {Promise<void>}
+ */
+async function submitReply(url, type, param, jBtnEle, message) {
+    await ajaxPromise(url, type, param, message)
+        .then(async (message) => {
+            jBtnEle.removeAttr('disabled');
+            await swalSingleBtn("", message, "success", "确定", false)
+                .then(() => {
+                    // 刷新页面同步回复统计
+                    location.reload();
+                });
+        }).catch((message) => {
+            swal({text: message, icon: "warning", button: "确定"});
+        });
+}

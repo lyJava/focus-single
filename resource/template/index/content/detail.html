@@ -82,6 +82,7 @@
         <div class="gf-comment-editor">
             <div id="vditor"></div>
             <div style="background-color: white;padding: 10px;margin-bottom: 10px;" class="text-right">
+                <!--回复提交按钮-->
                 <button id="reply-btn" data-reply-id="0" class="btn btn-primary btn-submit" type="submit">提交</button>
             </div>
         </div>
@@ -139,8 +140,9 @@
             });
             {{end}}
         },
-        adopted: function (id) {
-            jQuery.ajax({
+        adopted: async function (id) {
+            await adoptReply("/content/adopt/reply", "POST", `{{.Data.Content.Id}}`, id, "采纳成功")
+            /*jQuery.ajax({
                 type: 'POST',
                 url: '/content/adopt/reply',
                 data: {
@@ -159,38 +161,46 @@
                 },
                 error: function (html) {
                 }
-            });
+            });*/
         },
-        delete: function (id) {
-            swal({
-                title:   "删除回复",
-                text:    "您确定删除回复信息吗？",
-                icon:    "warning",
-                buttons: ["取消", "确定"]
-            }).then((value) => {
-
-                jQuery.ajax({
-                    type: 'DELETE',
-                    url: '/reply/delete',
-                    data: {
-                        id: id,
-                    },
-                    success: function (r) {
-                        if (r.code === 0) {
-                            swal({text: "删除成功", icon: "success", button: "确定"}).then(
-                                function(){
-                                    location.reload(); // 刷新页面同步回复统计
-                                });
-                        } else {
-                            swal({text: r.message, icon: "warning", button: "确定",});
-                        }
-                    },
-                    error: function (html) {
-                    }
-                });
-
-            });
-
+        delete: async function (id) {
+            await deleteConfirmationPromise("/reply/delete", id)
+            // swal({
+            //     title:   "删除回复",
+            //     text:    "您确定删除回复吗？",
+            //     icon:    "warning",
+            //     buttons: ["取消", "确定"],
+            //     dangerMode: true,
+            // }).then((value) => {
+            //     // 这里是确定按钮回调
+            //     if (value) {
+            //         jQuery.ajax({
+            //             type: 'DELETE',
+            //             url: '/reply/delete',
+            //             data: {
+            //                 id: id,
+            //             },
+            //             success: function (r) {
+            //                 if (r.code === 0) {
+            //                     swal({text: "删除成功", icon: "success", button: "确定"}).then(
+            //                         function(){
+            //                             location.reload(); // 刷新页面同步回复统计
+            //                         });
+            //                 } else {
+            //                     swal({text: r.message, icon: "warning", button: "确定",});
+            //                 }
+            //             },
+            //         });
+            //     }
+            //     // else {
+            //     //     swal({
+            //     //         text:    "取消了操作",
+            //     //         icon:    "info",
+            //     //         button:  "确定",
+            //     //     })
+            //     // }
+            //     console.log("删除回复取消了")
+            // });
         },
         reply: function (id) {
             $("#reply-btn").attr({"data-reply-id":id});
@@ -328,7 +338,7 @@
             if (!editor.getHTML()) return;
             $('button[type=submit]').attr('disabled', 'true');
             const pid = $("#reply-btn").attr("data-reply-id");
-            jQuery.ajax({
+            /*jQuery.ajax({
                 type: 'PUT',
                 url: '/reply',
                 data: {
@@ -351,8 +361,15 @@
                 },
                 error: function (html) {
                 }
-            });
-        })
+            });*/
+            const param = {
+                parentId:   pid,
+                content:    editor.getHTML(),
+                targetId:   "{{.Data.Content.Id}}",
+                targetType: "{{.Data.Content.Type}}",
+            };
+            submitReply("/reply", "PUT", param, $("button[type=submit]"), "提交成功");
+        });
 
         gf.content.loadReply();
     })
