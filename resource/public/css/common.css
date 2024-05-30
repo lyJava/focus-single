@@ -396,6 +396,15 @@ code[class*="language-"], pre[class*="language-"] {
     font-size: 14px !important;
 }
 
+/*富文本编辑器样式设置*/
+#vditor .vditor-toolbar {
+    padding-left: 10px !important;
+}
+
+#vditor .vditor-content .vditor-reset {
+    padding-left: 15px !important;
+}
+
 /**************** 发布页样式 ************************/
 
 .gf-publish {
