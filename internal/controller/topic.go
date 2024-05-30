@@ -2,11 +2,11 @@ package controller
 
 import (
 	"context"
-
 	"focus-single/api/v1"
 	"focus-single/internal/consts"
 	"focus-single/internal/model"
 	"focus-single/internal/service"
+	"log"
 )
 
 // Topic 主题管理
@@ -39,6 +39,7 @@ func (a *cTopic) Index(ctx context.Context, req *v1.TopicIndexReq) (res *v1.Topi
 }
 
 func (a *cTopic) Detail(ctx context.Context, req *v1.TopicDetailReq) (res *v1.TopicDetailRes, err error) {
+	log.Printf("当前主题ID:%d", req.Id)
 	out, err := service.Content().GetDetail(ctx, req.Id)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,8 @@ func (a *cTopic) Detail(ctx context.Context, req *v1.TopicDetailReq) (res *v1.To
 		service.View().Render404(ctx)
 		return
 	}
-	err = service.Content().AddViewCount(ctx, req.Id, 1)
+
+	err = service.Content().AddViewCount(ctx, req.Id, 0)
 	service.View().Render(ctx, model.View{
 		ContentType: consts.ContentTypeTopic,
 		Data:        out,
