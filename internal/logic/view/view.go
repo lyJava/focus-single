@@ -202,9 +202,7 @@ func (s *sView) Render500(ctx context.Context, data ...model.View) {
 
 // 获取视图存储目录
 func (s *sView) getViewFolderName(ctx context.Context) string {
-	viewPath := gstr.Split(g.Cfg().MustGet(ctx, "viewer.indexLayout").String(), "/")[0]
-	log.Printf("视图存储目录:%s", viewPath)
-	return viewPath
+	return gstr.Split(g.Cfg().MustGet(ctx, "viewer.indexLayout").String(), "/")[0]
 }
 
 // 获取自动设置的MainTpl
