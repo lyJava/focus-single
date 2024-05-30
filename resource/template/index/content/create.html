@@ -38,7 +38,7 @@
                 </div>
                 <div class="form-group row">
                     <div class="col-sm-3 offset-md-1">
-                        <button type="submit" class="btn btn-primary btn-block">发布</button>
+                        <button type="submit" class="btn btn-primary btn-block">发布1</button>
                     </div>
                 </div>
 
@@ -97,7 +97,7 @@ jQuery(function($) {
             accept:       'image/*',       // 附件格式
             url:          '/file',  // 上传路径
             linkToImgUrl: '/file',  // 粘贴图片上传
-            max:          8 * 1024 * 1024, // 最大上传文件大小（8MB）
+            max:          20 * 1024 * 1024, // 最大上传文件大小（8MB）
             headers: {
               "X-Requested-With": "XMLHttpRequest"
             },
@@ -135,7 +135,7 @@ jQuery(function($) {
                 required: "请选择栏目"
             }
         },
-        submitHandler: async function (form) {
+        submitHandler: function (form) {
             let submit = $('button[type=submit]')
             if (submit.attr('disabled') == 'true') {
                 swal({
@@ -155,10 +155,11 @@ jQuery(function($) {
                 });
                 return
             }
-            $('textarea[name=content]').val(value)
+            $('textarea[name=content]').val(value);
 
             submit.attr('disabled', 'true');
-            await submitContentForm($("#contentForm"), "{{.ContentType}}");
+
+            submitContentForm($(form), $("input[type='hidden'][name='type']").val());
             /*$(form).ajaxSubmit({
                 dataType: 'json',
                 success:  function (r, textStatus) {

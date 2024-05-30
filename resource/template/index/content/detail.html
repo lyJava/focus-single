@@ -140,8 +140,8 @@
             });
             {{end}}
         },
-        adopted: async function (id) {
-            await adoptReply("/content/adopt/reply", "POST", `{{.Data.Content.Id}}`, id, "采纳成功")
+        adopted: function (id) {
+            adoptReply("/content/adopt/reply", "POST", `{{.Data.Content.Id}}`, id, "采纳成功")
             /*jQuery.ajax({
                 type: 'POST',
                 url: '/content/adopt/reply',
@@ -163,8 +163,8 @@
                 }
             });*/
         },
-        delete: async function (id) {
-            await deleteConfirmationPromise("/reply/delete", id)
+        delete: function (id) {
+            deleteConfirmationPromise("/reply/delete", id)
             // swal({
             //     title:   "删除回复",
             //     text:    "您确定删除回复吗？",
@@ -207,8 +207,40 @@
             $("#reply-btn").html("回复#"+id);
             $("#reply-btn").focus();
         },
-        loadReply:function () {
-            jQuery.ajax({
+        loadReply: function () {
+            const param = {
+                size:         30,
+                page:         1,
+                targetId:     "{{.Data.Content.Id}}",
+                targetType:   "{{.Data.Content.Type}}",
+                targetUserId: "{{.Data.Content.UserId}}",
+            };
+            loadReplyData("/reply", "get", param, "", ).then(resp => {
+                if (resp.code === 0) {
+                    $('.reply-list').remove();
+                    const replyList = $(resp.data.content);
+                    for (let i = 0; i< replyList.length; i ++) {
+                        if (replyList[i].nodeName === "LI") {
+                            $('.comment-num')[0].append($(resp.data.content)[i]);
+                        }
+                    }
+
+                    // 采纳展示，如有有已经被采纳，那么其他全部隐藏
+                    $("[id^='adopted_btn_']").hide();
+                    if ("{{.Data.Content.AdoptedReplyId}}"=="0") {
+                        // 只有作者可以采纳
+                        {{if .Context.User}}
+                        {{if eq .Context.User.Id .Data.Content.UserId }}
+                        $("[id^='adopted_btn_']").show();
+                        {{ end }}
+                        {{end}}
+                    } else {
+                        $("#adopted_it_{{.Data.Content.AdoptedReplyId}}").show();
+                    }
+                }
+            });
+
+            /*jQuery.ajax({
                 type: 'GET',
                 url: '/reply',
                 data: {
@@ -243,7 +275,7 @@
                 },
                 error: function (html) {
                 }
-            });
+            });*/
         }
     }
     $(function () {
