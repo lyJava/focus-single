@@ -528,3 +528,96 @@ const submitContentForm = async (jForm, contentType) => {
         });
     });
 }
+
+/**
+ * 删除内容
+ *
+ * @param url     请求URL
+ * @param type    请求类型
+ * @param msg     成功提示信息
+ * @returns {Promise<void>}
+ */
+const deleteReply = async (url, type, msg) => {
+    await ajaxPromise(url, type, null, msg)
+        .then(async (message) => {
+            await swalSingleBtn("", message, "success", "确定", false).then(() => {
+                // 刷新页面同步回复统计
+                location.reload();
+            });
+        }).catch((message) => {
+            swalSingleBtn("", message, "warning", "确定", false);
+        });
+}
+
+/**
+ * 富文本编辑器初始化
+ *
+ * @param height        高度
+ * @param placeholder   提示信息
+ * @param uploadMaxSize 文件上传最大字节
+ * @returns {编辑器}
+ */
+const vditorInit = (height, placeholder, uploadMaxSize) => {
+    // 编辑器初始化
+    return new Vditor('vditor', {
+        cdn:'/plugin/vditor/',
+        theme : 'classic',
+        height: height,
+        icon  : 'ant',
+        mode  : 'wysiwyg',
+        cache : {enable: false},
+        placeholder: placeholder,
+        toolbar: [
+            "emoji",
+            "headings",
+            "bold",
+            "italic",
+            "strike",
+            "link",
+            "|",
+            "list",
+            "ordered-list",
+            "check",
+            "outdent",
+            "indent",
+            "|",
+            "quote",
+            "line",
+            "code",
+            "inline-code",
+            "insert-before",
+            "insert-after",
+            "|",
+            "upload",
+            "table",
+            "|",
+            "undo",
+            "redo",
+            "|",
+            "fullscreen",
+            "edit-mode",
+            "outline",
+            "preview"
+        ],
+        upload: {
+            accept:       'image/*',       // 附件格式
+            url:          '/file',  // 上传路径
+            linkToImgUrl: '/file',  // 粘贴图片上传
+            max:          uploadMaxSize, //20 * 1024 * 1024, // 最大上传文件大小（8MB）
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            filename(name) {
+                return name.replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, '').replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, '').replace('/\\s/g', '')
+            },
+            // 格式化上传返回
+            format(file, response) {
+                const {code, data, message} = JSON.parse(response)
+                return JSON.stringify({message, code, data: {errFiles: [], succMap: {"image.png": data.url}}})
+            }
+        },
+        preview: {
+            maxWidth: 1920
+        },
+    });
+}

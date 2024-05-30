@@ -1,7 +1,7 @@
 <!--- main --->
 <div class="row gf-list">
     <div class="col-md-10">
-        <ul class="list-group mt-5">
+        <ul class="list-group">
 
             <li class="list-group-item">
                 <div class="float-left">
@@ -34,7 +34,7 @@
                 </div>
                 <div class="gf-list-item-text">
                     <div class="float-left">
-                        <span class="badge  {{if eq $item.Category.ContentType `ask`}}badge-primary{{else}}badge-success{{end}}">{{$item.Category.Name}}</span>
+                        <span class="badge {{if eq $item.Category.ContentType `ask`}}badge-primary{{else}}badge-success{{end}}">{{$item.Category.Name}}</span>
                         <span class="gf-list-item-title">
                             <a href="/{{$item.Category.ContentType}}/{{$item.Content.Id}}" style="color: #222;" target="_self">
                                 {{$item.Content.Title}}
@@ -44,15 +44,21 @@
                     </div>
 
                     <div class="float-right">
-                                <span style="font-size: 12px;color: #ccc;text-align: right;">
-                                    <span class="icon iconfont">&#xe660;</span> {{$item.Content.ViewCount}}
-                                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                                    <span class="icon iconfont">&#xe6ab;</span> {{$item.Content.ReplyCount}}
-                                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                                </span>
+                        <span style="font-size: 12px;color: #ccc;text-align: right;">
+                            <span class="icon iconfont">&#xe660;</span> {{$item.Content.ViewCount}}
+                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                            <span class="icon iconfont">&#xe6ab;</span> {{$item.Content.ReplyCount}}
+                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                        </span>
                         <span style="font-size: 12px;color: #ccc;">
-                                {{$item.Content.CreatedAt | $.BuildIn.FormatTime}}
-                            </span>
+                            {{$item.Content.CreatedAt | $.BuildIn.FormatTime}}
+                        </span>
+                        <span style="font-size: 12px;text-align: right;margin-left: 10px;">
+                             <a href="javascript:void(0);" style="color: #ee0808;" target="_self"
+                                onclick="deleteReply('/{{$item.Category.ContentType}}/delete/{{$item.Content.Id}}', 'delete', '删除成功')">
+                                删除
+                            </a>
+                        </span>
                     </div>
                 </div>
             </li>
