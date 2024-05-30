@@ -7,14 +7,15 @@
                          src="{{$item.User.Avatar }}"
                          style="max-width:40px;border-radius: 120px;" alt="">
                 </a>
-                <a href="" class="text-dark font-weight-bold">{{$item.User.Nickname }}</a> <span
+                <a href="javascript:void(0);" class="text-dark font-weight-bold">{{$item.User.Nickname }}</a> <span
                         class="text-success">#{{ $item.Reply.Id }}</span> · <span
                         class="text-secondary">{{$item.Reply.CreatedAt | $.BuildIn.FormatTime}}</span>
                     {{if $item.Reply.ParentId}}
                         回复<a href="#reply_{{$item.Reply.ParentId}}"><span>#{{$item.Reply.ParentId}}</span></a>
                     {{end}}
                 <span class="badge badge-success" id="adopted_it_{{ $item.Reply.Id }}" style="display: none;">已采纳</span>
-                <a class="adopted_btn_{{ $item.Reply.UserId }} text-secondary" id="adopted_btn_{{ $item.Reply.Id }}" href="javascript:gf.content.adopted({{ $item.Reply.Id }});" style="font-size: 14px;">采纳</a>
+                <a class="adopted_btn_{{ $item.Reply.UserId }} text-secondary" id="adopted_btn_{{ $item.Reply.Id }}"
+                   href="javascript:void(0);" onclick="gf.content.adopted({{ $item.Reply.Id }})" style="font-size: 14px;">采纳</a>
             </div>
             <div class="reply-content" style="padding: 5px;word-wrap:break-word;">
                 {{$item.Reply.Content}}
@@ -40,10 +41,10 @@
                 
                 {{if $.Context.User}}
                 &nbsp; / &nbsp;
-                <a href="javascript:gf.content.reply({{ $item.Reply.Id }});" class="text-secondary" style="font-size: 14px;">回复</a>
+                <a href="javascript:void(0);" onclick="gf.content.reply({{ $item.Reply.Id }})" class="text-secondary" style="font-size: 14px;">回复</a>
                     {{if eq $.Context.User.Id $item.Reply.UserId }}
                     &nbsp; / &nbsp;
-                    <a href="javascript:gf.content.delete({{ $item.Reply.Id }});" class="text-secondary" style="font-size: 14px;">删除</a>
+                    <a href="javascript:void(0);" onclick="gf.content.delete({{ $item.Reply.Id }})" class="text-secondary" style="font-size: 14px;">删除</a>
                     {{end}}
                 {{end}}
                 
