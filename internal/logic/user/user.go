@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-
 	"focus-single/internal/model/do"
 	"focus-single/internal/service"
 	"github.com/gogf/gf/v2/crypto/gmd5"
@@ -358,7 +357,7 @@ func (s *sUser) IsCtxAdmin(ctx context.Context) bool {
 
 // IsAdmin 判断给定用户是否管理员
 func (s *sUser) IsAdmin(ctx context.Context, userId uint) bool {
-	adminIds := g.Cfg().MustGet(ctx, "settings.adminIds").Uints()
+	adminIds := g.Cfg().MustGet(ctx, "setting.adminIds").Uints()
 	for _, adminId := range adminIds {
 		if userId == adminId {
 			return true
