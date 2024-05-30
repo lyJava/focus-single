@@ -3,7 +3,7 @@ package view
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"focus-single/internal/util"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -16,7 +16,7 @@ import (
 	"focus-single/internal/service"
 )
 
-// 视图自定义方法管理对象
+// viewBuildIn 视图自定义方法管理对象
 type viewBuildIn struct {
 	httpRequest *ghttp.Request
 }
@@ -79,14 +79,16 @@ func (s *viewBuildIn) TopMenus() ([]*model.MenuItem, error) {
 
 // CategoryTree 获得指定的栏目树形对象，当contentType为空时，表示获取所有的栏目树形对象。
 func (s *viewBuildIn) CategoryTree(contentType string) ([]*model.CategoryTreeItem, error) {
-	treeItems, err := service.Category().GetTree(s.httpRequest.Context(), contentType)
 	ctx := context.Background()
+	g.Log().Infof(ctx, "获得指定的类型===%s", contentType)
+	treeItems, err := service.Category().GetTree(ctx, contentType)
+
 	if err != nil {
 		g.Log().Errorf(ctx, "获得指定的栏目树形对象出错===%+v", err)
 		return nil, err
 	}
 	marshal, _ := json.Marshal(&treeItems)
-	g.Log().Infof(ctx, "获得指定的栏目===%s,类型===%s", marshal, contentType)
+	g.Log().Infof(ctx, "获得指定的栏目===%s", marshal)
 	return treeItems, nil
 }
 
@@ -123,19 +125,20 @@ func (s *viewBuildIn) GenderFont(gender int) string {
 
 // Gender 根据性别字段内容返回性别。
 func (s *viewBuildIn) Gender(gender int) string {
-	switch gender {
+	/*switch gender {
 	case consts.UserGenderMale:
 		return "男"
 	case consts.UserGenderFemale:
 		return "女"
 	default:
 		return "未知"
-	}
+	}*/
+	return consts.GetGenderByType(gender)
 }
 
 // ContentTypeName 根据性别字段内容返回性别。
 func (s *viewBuildIn) ContentTypeName(contentType string) string {
-	switch contentType {
+	/*switch contentType {
 	case consts.ContentTypeArticle:
 		return "文章"
 	case consts.ContentTypeAsk:
@@ -144,7 +147,8 @@ func (s *viewBuildIn) ContentTypeName(contentType string) string {
 		return "主题"
 	default:
 		return "未知"
-	}
+	}*/
+	return consts.GetContentByType(contentType)
 }
 
 // Page 创建分页HTML内容
@@ -171,37 +175,7 @@ func (s *viewBuildIn) UrlPath() string {
 
 // FormatTime 格式化时间
 func (s *viewBuildIn) FormatTime(gt *gtime.Time) string {
-	if gt == nil {
-		return ""
-	}
-	n := gtime.Now().Timestamp()
-	t := gt.Timestamp()
-
-	var ys int64 = 31536000
-	var ds int64 = 86400
-	var hs int64 = 3600
-	var ms int64 = 60
-	var ss int64 = 1
-
-	var rs string
-
-	d := n - t
-	switch {
-	case d > ys:
-		rs = fmt.Sprintf("%d年前", int(d/ys))
-	case d > ds:
-		rs = fmt.Sprintf("%d天前", int(d/ds))
-	case d > hs:
-		rs = fmt.Sprintf("%d小时前", int(d/hs))
-	case d > ms:
-		rs = fmt.Sprintf("%d分钟前", int(d/ms))
-	case d > ss:
-		rs = fmt.Sprintf("%d秒前", int(d/ss))
-	default:
-		rs = "刚刚"
-	}
-
-	return rs
+	return util.FormatGfTime(gt)
 }
 
 // Version 随机数 开发环境时间戳，线上为前端版本号

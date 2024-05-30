@@ -8,3 +8,14 @@ const (
 	UserGenderFemale   = 2 // 性别: 女
 	UserLoginUrl       = "/login"
 )
+
+func GetGenderByType(typeInt int) string {
+	dataMap := map[int]string{
+		1: "男",
+		2: "女",
+	}
+	if content, exists := dataMap[typeInt]; exists {
+		return content
+	}
+	return "未知"
+}

@@ -11,3 +11,15 @@ const (
 	ContentTypeAsk         = "ask"
 	ContentTypeTopic       = "topic"
 )
+
+func GetContentByType(typeStr string) string {
+	dataMap := map[string]string{
+		"article": "文章",
+		"topic":   "主题",
+		"ask":     "问答",
+	}
+	if content, exists := dataMap[typeStr]; exists {
+		return content
+	}
+	return "未知"
+}
