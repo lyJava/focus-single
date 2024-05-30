@@ -10,5 +10,6 @@ require (
 	github.com/o1egl/govatar v0.3.0
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.6.0
+	golang.org/x/net v0.24.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )
