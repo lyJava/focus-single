@@ -120,16 +120,16 @@ gf.interact = {
     },
     // 检查是执行踩还是取消踩
     checkCai: function (elem, id) {
-        var type = $(elem).attr("data-type")
+        const type = $(elem).attr("data-type");
         if ($(elem).find('.icon').hasClass('icon-cai-done')) {
-            this.cancelCai(elem, type, id)
+            this.cancelCai(elem, type, id);
         } else {
-            this.cai(elem, type, id)
+            this.cai(elem, type, id);
         }
     },
     // 踩
     cai: function (elem, type, id) {
-        jQuery.ajax({
+        /*jQuery.ajax({
             type: 'PUT',
             url : '/interact/cai',
             data: {
@@ -149,11 +149,16 @@ gf.interact = {
                     })
                 }
             }
-        });
+        });*/
+        const param = {
+            id: id,
+            type: type
+        }
+        clickCai("/interact/cai", "PUT", param, "", elem);
     },
     // 取消踩
     cancelCai: function (elem, type, id) {
-        jQuery.ajax({
+        /*jQuery.ajax({
             type: 'DELETE',
             url:  '/interact/cai',
             data: {
@@ -173,7 +178,12 @@ gf.interact = {
                     })
                 }
             }
-        });
+        });*/
+        const param = {
+            id: id,
+            type: type
+        }
+        cancelCai("/interact/cai", "DELETE", param, "", elem);
     }
 }
 
@@ -225,6 +235,57 @@ jQuery(function ($) {
 })
 
 /**
+ * 点击踩
+ *
+ * @param url
+ * @param type
+ * @param param
+ * @param message
+ * @param ele
+ * @returns {Promise<void>}
+ */
+const clickCai = async (url, type, param, message, ele) => {
+    await ajaxPromise(url, type, param, message).then(resp => {
+        if (resp.code <= 0) {
+            const num = $(ele).find('.number').html();
+            $(ele).find('.number').html(parseInt(num)+1);
+            $(ele).find('.icon').removeClass('icon-cai').addClass('icon-cai-done');
+        } else {
+            swal({
+                text:   r.message,
+                button: "确定"
+            })
+        }
+    });
+}
+
+/**
+ * 取消踩
+ *
+ * @param url
+ * @param type
+ * @param param
+ * @param message
+ * @param ele
+ * @returns {Promise<void>}
+ */
+const cancelCai = async (url, type, param, message, ele) => {
+    await ajaxPromise(url, type, param, message).then(resp => {
+        if (resp.code <= 0) {
+            const num = $(ele).find('.number').html();
+            $(ele).find('.number').html(parseInt(num) - 1);
+            $(ele).find('.icon').removeClass('icon-cai-done').addClass('icon-cai');
+        } else {
+            swal({
+                text: resp.message,
+                button: "确定"
+            });
+        }
+    });
+}
+
+
+/**
  * 创建弹窗(异步)
  *
  * @param title      标题
@@ -234,7 +295,7 @@ jQuery(function ($) {
  * @param dangerMode 是否红色提醒
  * @returns {Promise<unknown>}
  */
-function newSwal(title, text, icon, buttons, dangerMode) {
+const newSwal = (title, text, icon, buttons, dangerMode) => {
     return new Promise((resolve, reject) => {
         swal({
             title: title,
@@ -261,7 +322,7 @@ function newSwal(title, text, icon, buttons, dangerMode) {
  * @param dangerMode 是否显示危险(为true按钮会变成红色)
  * @returns {Promise<unknown>}
  */
-function swalSingleBtn(title, text, icon, button, dangerMode) {
+const swalSingleBtn = (title, text, icon, button, dangerMode) => {
     return new Promise((resolve, reject) => {
         swal({
             title: title,
@@ -277,7 +338,7 @@ function swalSingleBtn(title, text, icon, button, dangerMode) {
     });
 }
 
-function deleteReplyFunc(url, id, successCallback, errorCallback) {
+const deleteReplyFunc = (url, id, successCallback, errorCallback) => {
     jQuery.ajax({
         type: 'DELETE',
         url: url,
@@ -297,15 +358,17 @@ function deleteReplyFunc(url, id, successCallback, errorCallback) {
     });
 }
 
-function ajaxPromise(url, type, param, message) {
+const ajaxPromise = (url, type, param, message) => {
     return new Promise((resolve, reject) => {
         jQuery.ajax({
             type: type,
             url: url,
             data: param,
             success: function (r) {
-                if (r.code === 0) {
+                if (r.code === 0 && message) {
                     resolve(message);
+                } else if (r.code === 0 && !message) {
+                    resolve(r);
                 } else {
                     reject(r.message);
                 }
@@ -317,7 +380,7 @@ function ajaxPromise(url, type, param, message) {
     });
 }
 
-function deleteConfirmation(url, id) {
+const deleteConfirmation = (url, id) => {
     swal({
         title: "删除回复",
         text: "您确定删除回复吗？",
@@ -350,7 +413,7 @@ function deleteConfirmation(url, id) {
  * @param id 回复ID
  * @returns {Promise<void>} 返回异步
  */
-async function deleteConfirmationPromise(url, id) {
+const deleteConfirmationPromise = async (url, id) => {
     await newSwal("删除回复", "您确定删除回复吗？", "warning", ["取消", "确定"], true).then(async (value) => {
         if (value) {
             await ajaxPromise(url, "DELETE", {id}, "删除成功")
@@ -369,6 +432,10 @@ async function deleteConfirmationPromise(url, id) {
     });
 }
 
+const loadReplyData = async (url, type, param) => {
+    return await ajaxPromise(url, type, param, "")
+}
+
 /**
  * 采纳回复
  *
@@ -379,7 +446,7 @@ async function deleteConfirmationPromise(url, id) {
  * @param msg     成功提示信息
  * @returns {Promise<void>}
  */
-async function adoptReply(url, type, id, replyId, msg) {
+const adoptReply = async (url, type, id, replyId, msg) => {
     await ajaxPromise(url, type, {id, replyId}, msg)
         .then(async (message) => {
             await swalSingleBtn("", message, "success", "确定", false).then(() => {
@@ -401,7 +468,7 @@ async function adoptReply(url, type, id, replyId, msg) {
  * @param message 提示信息
  * @returns {Promise<void>}
  */
-async function submitReply(url, type, param, jBtnEle, message) {
+const submitReply = async (url, type, param, jBtnEle, message) => {
     await ajaxPromise(url, type, param, message)
         .then(async (message) => {
             jBtnEle.removeAttr('disabled');
@@ -421,7 +488,7 @@ async function submitReply(url, type, param, jBtnEle, message) {
  * @param form jQuery表单元素对象
  * @returns {Promise<unknown>}
  */
-function ajaxSubmitPromise(form) {
+const ajaxSubmitPromise = (form) => {
     return new Promise((resolve, reject) => {
         form.ajaxSubmit({
             dataType: "json",
@@ -446,12 +513,13 @@ function ajaxSubmitPromise(form) {
  * @param contentType 内容类型
  * @returns {Promise<void>}
  */
-async function submitContentForm(jForm, contentType) {
+const submitContentForm = async (jForm, contentType) => {
     await ajaxSubmitPromise(jForm).then(async (resp) => {
         await newSwal("发布成功", resp.message, "success", ["继续发布", "查看详情"], false).then((val) => {
             if (val) {
                 const dataId = resp.data.contentId;
-                window.location.href = `/${contentType}/${dataId}`
+                console.log("返回数据", resp.data, contentType)
+                window.location.href = `/article/${dataId}`
             } else {
                 window.location.reload();
             }
