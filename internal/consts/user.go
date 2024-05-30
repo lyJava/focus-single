@@ -11,8 +11,8 @@ const (
 
 func GetGenderByType(typeInt int) string {
 	dataMap := map[int]string{
-		1: "男",
-		2: "女",
+		UserGenderMale:   "男",
+		UserGenderFemale: "女",
 	}
 	if content, exists := dataMap[typeInt]; exists {
 		return content

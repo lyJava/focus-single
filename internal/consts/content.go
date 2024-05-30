@@ -14,9 +14,9 @@ const (
 
 func GetContentByType(typeStr string) string {
 	dataMap := map[string]string{
-		"article": "文章",
-		"topic":   "主题",
-		"ask":     "问答",
+		ContentTypeArticle: "文章",
+		ContentTypeTopic:   "主题",
+		ContentTypeAsk:     "问答",
 	}
 	if content, exists := dataMap[typeStr]; exists {
 		return content
