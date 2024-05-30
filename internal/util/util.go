@@ -3,7 +3,6 @@ package util
 import (
 	"fmt"
 	"github.com/gogf/gf/v2/os/gtime"
-	"log"
 )
 
 // FormatGfTime 格式化时间
@@ -11,9 +10,6 @@ func FormatGfTime(gt *gtime.Time) string {
 	if gt == nil {
 		return ""
 	}
-	now := gtime.Now().Timestamp()
-	timestamp := gt.Timestamp()
-	diff := now - timestamp
 
 	const (
 		yearInSeconds   = 31536000
@@ -23,7 +19,8 @@ func FormatGfTime(gt *gtime.Time) string {
 		secondInSeconds = 1
 	)
 
-	log.Printf("进入了===%v", diff)
+	diff := gtime.Now().Timestamp() - gt.Timestamp()
+
 	switch {
 	case diff > yearInSeconds:
 		return fmt.Sprintf("%d年前", int(diff/yearInSeconds))
