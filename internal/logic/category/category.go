@@ -66,11 +66,11 @@ func (s *sCategory) GetSubIdList(ctx context.Context, id uint) ([]uint, error) {
 	if err != nil {
 		return nil, err
 	}
-	entity := m[id]
-	if entity == nil {
+	entityData := m[id]
+	if entityData == nil {
 		return nil, gerror.Newf(`%d栏目不存在`, id)
 	}
-	tree, err := s.GetTree(ctx, entity.ContentType)
+	tree, err := s.GetTree(ctx, entityData.ContentType)
 	if err != nil {
 		return nil, err
 	}
@@ -96,19 +96,19 @@ func (s *sCategory) getSubIdListByTree(id uint, trees []*model.CategoryTreeItem)
 // 构造树形栏目列表。
 func (s *sCategory) formTree(parentId uint, contentType string, entities []*entity.Category) ([]*model.CategoryTreeItem, error) {
 	tree := make([]*model.CategoryTreeItem, 0)
-	for _, entity := range entities {
-		if contentType != "" && entity.ContentType != contentType {
+	for _, entityItem := range entities {
+		if contentType != "" && entityItem.ContentType != contentType {
 			continue
 		}
-		if entity.ParentId == parentId {
-			subTree, err := s.formTree(entity.Id, contentType, entities)
+		if entityItem.ParentId == parentId {
+			subTree, err := s.formTree(entityItem.Id, contentType, entities)
 			if err != nil {
 				return nil, err
 			}
 			item := &model.CategoryTreeItem{
 				Items: subTree,
 			}
-			if err = gconv.Struct(entity, item); err != nil {
+			if err = gconv.Struct(entityItem, item); err != nil {
 				return nil, err
 			}
 			tree = append(tree, item)
@@ -145,9 +145,9 @@ func (s *sCategory) GetMap(ctx context.Context) (map[uint]*entity.Category, erro
 				return nil, err
 			}
 			m := make(map[uint]*entity.Category)
-			for _, entity := range entities {
-				item := entity
-				m[entity.Id] = item
+			for _, entityItem := range entities {
+				item := entityItem
+				m[entityItem.Id] = item
 			}
 			return m, nil
 		}
