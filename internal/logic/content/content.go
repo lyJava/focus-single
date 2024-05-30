@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"focus-single/internal/util"
 	"log"
 
 	"focus-single/internal/service"
@@ -30,9 +31,8 @@ func New() *sContent {
 
 // GetList 查询内容列表
 func (s *sContent) GetList(ctx context.Context, in model.ContentGetListInput) (out *model.ContentGetListOutput, err error) {
-	var (
-		m = dao.Content.Ctx(ctx)
-	)
+	//log.Println("首页查询")
+	m := dao.Content.Ctx(ctx)
 	out = &model.ContentGetListOutput{
 		Page: in.Page,
 		Size: in.Size,
@@ -101,6 +101,8 @@ func (s *sContent) GetList(ctx context.Context, in model.ContentGetListInput) (o
 	if err != nil {
 		return out, err
 	}
+	//marshal, _ := json.Marshal(&out.List)
+	//g.Log().Infof(ctx, "首页查询list===%s", string(marshal))
 	return
 }
 
@@ -190,7 +192,38 @@ func (s *sContent) Search(ctx context.Context, in model.ContentSearchInput) (out
 // GetDetail 查询详情
 func (s *sContent) GetDetail(ctx context.Context, id uint) (out *model.ContentGetDetailOutput, err error) {
 	out = &model.ContentGetDetailOutput{}
-	if err := dao.Content.Ctx(ctx).Where(dao.Content.Columns().Id, cast.ToInt64(id)).Scan(&out.Content); err != nil {
+	if err := dao.Content.Ctx(ctx).
+		Where(dao.Content.Columns().Id, id).
+		Scan(&out.Content); err != nil {
+		return nil, err
+	}
+	// 没有数据
+	if out.Content == nil {
+		return nil, nil
+	}
+	if err = dao.User.Ctx(ctx).Where(dao.Content.Columns().Id, out.Content.UserId).Scan(&out.User); err != nil {
+		return nil, err
+	}
+
+	// 查询分类数据
+	if err = dao.Category.Ctx(ctx).
+		Fields(dao.Category.Columns().Id, dao.Category.Columns().Name, dao.Category.Columns().ContentType).
+		Where(dao.Category.Columns().Id, out.Content.CategoryId).Scan(&out.Category); err != nil {
+		return nil, err
+	}
+
+	//marshal, _ := json.Marshal(&out)
+	//g.Log().Infof(ctx, "返回的详情:%s", string(marshal))
+	return out, nil
+}
+
+// GetDetail2 查询详情
+func (s *sContent) GetDetail2(ctx context.Context, id, categoryId uint) (out *model.ContentGetDetailOutput, err error) {
+	out = &model.ContentGetDetailOutput{}
+	if err = dao.Content.Ctx(ctx).
+		Where(dao.Content.Columns().Id, id).
+		Where(dao.Content.Columns().CategoryId, categoryId).
+		Scan(&out.Content); err != nil {
 		return nil, err
 	}
 	// 没有数据
@@ -245,7 +278,7 @@ func (s *sContent) Create(ctx context.Context, in model.ContentCreateInput) (out
 
 	if sqlType == "pgsql" {
 		insertSql := `INSERT INTO gf_content(user_id, type, category_id,  title, content, created_at, updated_at) 
-    					VALUES ($1, $2, $3, $4,$5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id`
+    					VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id`
 		err = g.DB().Ctx(ctx).Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 			query, err := g.DB().Ctx(ctx).GetOne(ctx, insertSql, in.UserId, in.Type, in.CategoryId, in.Title, in.Content)
 			if err != nil {
@@ -286,10 +319,46 @@ func (s *sContent) Update(ctx context.Context, in model.ContentUpdateInput) erro
 func (s *sContent) Delete(ctx context.Context, id uint) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		user := service.BizCtx().Get(ctx).User
+		log.Printf("是否是管理员:%t", user.IsAdmin)
 		// 管理员直接删除文章和评论
 		if user.IsAdmin {
-			_, err := dao.Content.Ctx(ctx).TX(tx).Where(dao.Content.Columns().Id, id).Delete()
+			var contentEntity *entity.Content
+			err := dao.Content.Ctx(ctx).TX(tx).Where(dao.Content.Columns().Id, id).Scan(&contentEntity)
 			if err == nil {
+				contentStr := contentEntity.Content
+				log.Printf("对应内容信息htmlStr:%s", contentStr)
+				if contentStr != "" {
+					contentImgSrcList := util.GetImgSrcFromStr(contentStr)
+					log.Printf("内容图片切片===%v", contentImgSrcList)
+					err = util.DeleteFile(contentImgSrcList)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			_, err = dao.Content.Ctx(ctx).TX(tx).Where(dao.Content.Columns().Id, id).Delete()
+			log.Printf("内容ID:%d", id)
+			if err == nil {
+				var replyEntity *entity.Reply
+				// TargetId为内容表的主键ID
+				err = dao.Reply.ReplyDao.Ctx(ctx).TX(tx).Where(dao.Reply.Columns().TargetId, id).Scan(&replyEntity)
+				if err == nil {
+					contentStr := replyEntity.Content
+					log.Printf("对应回复信息htmlStr:%s", contentStr)
+					if contentStr != "" {
+						var replyImgSrcList []string
+						replyImgSrcList, err = util.FindImgSrc(contentStr)
+						if err == nil {
+							log.Printf("回复内容图片切片===%v", replyImgSrcList)
+							err = util.DeleteFile(replyImgSrcList)
+							if err != nil {
+								return err
+							}
+						}
+					}
+				}
+
 				_, err = dao.Reply.Ctx(ctx).TX(tx).Where(dao.Reply.Columns().TargetId, id).Delete()
 			}
 			return err
@@ -300,10 +369,15 @@ func (s *sContent) Delete(ctx context.Context, id uint) error {
 			dao.Content.Columns().UserId: service.BizCtx().Get(ctx).User.Id,
 		}).Delete()
 		// 删除评论
-		if err == nil {
-			err = service.Reply().DeleteByUserContentId(ctx, user.Id, id)
+		if err != nil {
+			return err
 		}
-		return err
+		err = service.Reply().DeleteByUserContentId(ctx, user.Id, id)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
 }
 
@@ -320,7 +394,7 @@ func (s *sContent) AddViewCount(ctx context.Context, id uint, count int) error {
 	})
 }
 
-// AddReplyCount 回复次数增加
+// AddReplyCount 增加回复次数
 func (s *sContent) AddReplyCount(ctx context.Context, id uint, count int) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		_, err := dao.Content.Ctx(ctx).TX(tx).

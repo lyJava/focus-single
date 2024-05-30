@@ -6,6 +6,7 @@ import (
 	"focus-single/internal/consts"
 	"focus-single/internal/model"
 	"focus-single/internal/service"
+	"github.com/gogf/gf/v2/frame/g"
 	"log"
 )
 
@@ -64,5 +65,15 @@ func (a *cTopic) Detail(ctx context.Context, req *v1.TopicDetailReq) (res *v1.To
 			CategoryId:  out.Content.CategoryId,
 		}),
 	})
+	return
+}
+
+// Delete 删除主题内容(包括了主题内容图片)，那么该内容下的回复也会被删除(包括了回复内容图片)
+func (a *cTopic) Delete(ctx context.Context, req *v1.TopicDeleteReq) (res *v1.TopicDetailRes, err error) {
+	err = service.Content().Delete(ctx, req.Id)
+	if err != nil {
+		g.Log().Errorf(ctx, "内容删除错误===%+v", err)
+	}
+	log.Println("内容删除成功")
 	return
 }

@@ -26,7 +26,7 @@ func New() *sFile {
 	return &sFile{}
 }
 
-// 同一上传文件
+// Upload 统一文件上传
 func (s *sFile) Upload(ctx context.Context, in model.FileUploadInput) (*model.FileUploadOutput, error) {
 	uploadPath := g.Cfg().MustGet(ctx, "upload.path").String()
 	if uploadPath == "" {
@@ -35,6 +35,7 @@ func (s *sFile) Upload(ctx context.Context, in model.FileUploadInput) (*model.Fi
 	if in.Name != "" {
 		in.File.Filename = in.Name
 	}
+	g.Log().Infof(ctx, "上传的原始文件名:%s,大小:%d", in.File.Filename, in.File.Size)
 	// 同一用户1分钟之内只能上传10张图片
 	count, err := dao.File.Ctx(ctx).
 		Where(dao.File.Columns().UserId, service.BizCtx().Get(ctx).User.Id).
@@ -58,6 +59,7 @@ func (s *sFile) Upload(ctx context.Context, in model.FileUploadInput) (*model.Fi
 		Url:    "/upload/" + dateDirName + "/" + fileName,
 		UserId: service.BizCtx().Get(ctx).User.Id,
 	}
+	g.Log().Infof(ctx, "上传成功返回文件名:%s,路径:%s", data.Name, data.Url)
 	result, err := dao.File.Ctx(ctx).Data(data).OmitEmpty().Insert()
 	if err != nil {
 		return nil, err

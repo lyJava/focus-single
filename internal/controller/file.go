@@ -10,7 +10,7 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 )
 
-// 文件管理
+// File 文件管理
 var File = cFile{}
 
 type cFile struct{}

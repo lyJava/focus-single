@@ -6,6 +6,7 @@ import (
 	"focus-single/internal/model"
 	"focus-single/internal/model/entity"
 	"focus-single/internal/service"
+	"focus-single/internal/util"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gutil"
@@ -46,11 +47,21 @@ func (s *sReply) Delete(ctx context.Context, id uint) error {
 			g.Log().Errorf(ctx, "查询回复错误===%+v", err)
 			return err
 		}
+
+		replyContent := reply.Content
+		var replyContentSrcList []string
+		if replyContent != "" {
+			replyContentSrcList, err = util.FindImgSrc(replyContent)
+			if err != nil {
+				g.Log().Errorf(ctx, "获取图片src错误===%+v", err)
+			}
+		}
+
 		// 删除回复记录
-		_, err = dao.Reply.Ctx(ctx).TX(tx).Where(g.Map{
-			dao.Reply.Columns().Id:     id,
-			dao.Reply.Columns().UserId: service.BizCtx().Get(ctx).User.Id,
-		}).Delete()
+		_, err = dao.Reply.Ctx(ctx).TX(tx).
+			Where(dao.Reply.Columns().Id, id).
+			Where(dao.Reply.Columns().UserId, service.BizCtx().Get(ctx).User.Id).
+			Delete()
 		if err == nil {
 			// 回复统计-1
 			err = service.Content().AddReplyCount(ctx, reply.TargetId, -1)
@@ -67,8 +78,17 @@ func (s *sReply) Delete(ctx context.Context, id uint) error {
 		}
 		if err != nil {
 			g.Log().Errorf(ctx, "删除回复错误===%+v", err)
+			return err
 		}
-		return err
+
+		// 删除回复图片
+		g.Log().Infof(ctx, "获取图片src切片:%v", replyContentSrcList)
+		err = util.DeleteFile(replyContentSrcList)
+		if err != nil {
+			g.Log().Errorf(ctx, "删除图片出错===%+v", err)
+		}
+
+		return nil
 	})
 }
 

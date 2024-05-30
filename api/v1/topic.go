@@ -19,3 +19,10 @@ type TopicDetailReq struct {
 type TopicDetailRes struct {
 	g.Meta `mime:"text/html" type:"string" example:"<html/>"`
 }
+
+type TopicDeleteReq struct {
+	g.Meta `path:"/topic/delete/{Id}" method:"delete" tags:"话题" summary:"删除话题" `
+	Id     uint `in:"path" v:"min:1#请选择查看的内容" dc:"内容id"`
+}
+
+type TopicDeleteRes struct{}
