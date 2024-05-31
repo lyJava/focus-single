@@ -1,8 +1,8 @@
 // 全局管理对象
 gf = {
     // 刷新验证码
-    reloadCaptcha: function() {
-        $("img.captcha").attr("src","/captcha?v="+Math.random());
+    reloadCaptcha: function () {
+        $("img.captcha").attr("src", "/captcha?v=" + Math.random());
     },
 }
 
@@ -11,9 +11,9 @@ gf.user = {
     // 退出登录
     logout: function () {
         swal({
-            title:   "注销登录",
-            text:    "您确定需要注销当前登录状态吗？",
-            icon:    "warning",
+            title: "注销登录",
+            text: "您确定需要注销当前登录状态吗？",
+            icon: "warning",
             buttons: ["取消", "确定"]
         }).then((value) => {
             if (value) {
@@ -26,28 +26,28 @@ gf.user = {
 // 内容模块
 gf.content = {
     // 删除内容
-    delete: function (id,url) {
+    delete: function (id, url) {
         url = url || "/"
         swal({
-            title:   "删除内容",
-            text:    "您确定要删除该内容吗？",
-            icon:    "warning",
+            title: "删除内容",
+            text: "您确定要删除该内容吗？",
+            icon: "warning",
             buttons: ["取消", "确定"]
         }).then((value) => {
             if (value) {
                 jQuery.ajax({
                     type: 'DELETE',
-                    url : '/content/delete',
+                    url: '/content/delete',
                     data: {
                         id: id
                     },
                     sync: true,
                     success: function (data) {
                         swal({
-                            title:   "删除完成",
-                            text:    "3秒后自动跳转到",
-                            icon:    "success",
-                            timer:   2000,
+                            title: "删除完成",
+                            text: "3秒后自动跳转到",
+                            icon: "success",
+                            timer: 2000,
                             buttons: false
                         }).then((value) => {
                             window.location.href = url;
@@ -74,20 +74,20 @@ gf.interact = {
     zan: function (elem, type, id) {
         jQuery.ajax({
             type: 'PUT',
-            url : '/interact/zan',
+            url: '/interact/zan',
             data: {
-                id:   id,
+                id: id,
                 type: type
             },
             sync: true,
             success: function (r, status) {
                 if (r.code <= 0) {
                     let number = $(elem).find('.number').html()
-                    $(elem).find('.number').html(parseInt(number)+1)
+                    $(elem).find('.number').html(parseInt(number) + 1)
                     $(elem).find('.icon').removeClass('icon-zan').addClass('icon-zan-done')
                 } else {
                     swal({
-                        text:   r.message,
+                        text: r.message,
                         button: "确定"
                     })
                 }
@@ -98,9 +98,9 @@ gf.interact = {
     cancelZan: function (elem, type, id) {
         jQuery.ajax({
             type: 'DELETE',
-            url:  '/interact/zan',
+            url: '/interact/zan',
             data: {
-                id:   id,
+                id: id,
                 type: type
             },
             sync: true,
@@ -214,23 +214,23 @@ jQuery(function ($) {
     }
 
     $.extend($.validator.messages, {
-        required:    "这是必填字段",
-        remote:      "请修正此字段",
-        email:       "请输入有效的电子邮件地址",
-        url:         "请输入有效的网址",
-        date:        "请输入有效的日期",
-        dateISO:     "请输入有效的日期 (YYYY-MM-DD)",
-        number:      "请输入有效的数字",
-        digits:      "只能输入数字",
-        creditcard:  "请输入有效的信用卡号码",
-        equalTo:     "你的输入不相同",
-        extension:   "请输入有效的后缀",
-        maxlength:   $.validator.format("最多可以输入 {0} 个字符"),
-        minlength:   $.validator.format("最少要输入 {0} 个字符"),
+        required: "这是必填字段",
+        remote: "请修正此字段",
+        email: "请输入有效的电子邮件地址",
+        url: "请输入有效的网址",
+        date: "请输入有效的日期",
+        dateISO: "请输入有效的日期 (YYYY-MM-DD)",
+        number: "请输入有效的数字",
+        digits: "只能输入数字",
+        creditcard: "请输入有效的信用卡号码",
+        equalTo: "你的输入不相同",
+        extension: "请输入有效的后缀",
+        maxlength: $.validator.format("最多可以输入 {0} 个字符"),
+        minlength: $.validator.format("最少要输入 {0} 个字符"),
         rangelength: $.validator.format("请输入长度在 {0} 到 {1} 之间的字符串"),
-        range:       $.validator.format("请输入范围在 {0} 到 {1} 之间的数值"),
-        max:         $.validator.format("请输入不大于 {0} 的数值"),
-        min:         $.validator.format("请输入不小于 {0} 的数值")
+        range: $.validator.format("请输入范围在 {0} 到 {1} 之间的数值"),
+        max: $.validator.format("请输入不大于 {0} 的数值"),
+        min: $.validator.format("请输入不小于 {0} 的数值")
     });
 })
 
@@ -248,13 +248,13 @@ const clickCai = async (url, type, param, message, ele) => {
     await ajaxPromise(url, type, param, message).then(resp => {
         if (resp.code <= 0) {
             const num = $(ele).find('.number').html();
-            $(ele).find('.number').html(parseInt(num)+1);
+            $(ele).find('.number').html(parseInt(num) + 1);
             $(ele).find('.icon').removeClass('icon-cai').addClass('icon-cai-done');
         } else {
             swal({
-                text:   r.message,
+                text: r.message,
                 button: "确定"
-            })
+            });
         }
     });
 }
@@ -607,12 +607,14 @@ const deleteReply = async (url, title, msg, ask) => {
 const vditorInit = (height, placeholder, content, uploadMaxSize) => {
     // 编辑器初始化
     return new Vditor('vditor', {
-        cdn:'/plugin/vditor/',
-        theme : 'classic',
+        cdn: '/plugin/vditor/',
+        theme: 'classic',
         height: height,
-        icon  : 'ant',
-        mode  : 'wysiwyg',
-        cache : {enable: false},
+        icon: 'ant',
+        mode: 'wysiwyg',
+        cache: {
+            enable: false
+        },
         placeholder: placeholder,
         value: content,
         toolbar: [
@@ -648,10 +650,10 @@ const vditorInit = (height, placeholder, content, uploadMaxSize) => {
             "preview"
         ],
         upload: {
-            accept:       'image/*',       // 附件格式
-            url:          '/file',  // 上传路径
-            linkToImgUrl: '/file',  // 粘贴图片上传
-            max:          uploadMaxSize, //20 * 1024 * 1024, // 最大上传文件大小（8MB）
+            accept: 'image/*',     // 附件格式
+            url: '/file',          // 上传路径
+            linkToImgUrl: '/file', // 粘贴图片上传
+            max: uploadMaxSize,    // 20 * 1024 * 1024, // 最大上传文件大小（10MB）
             headers: {
                 "X-Requested-With": "XMLHttpRequest"
             },
