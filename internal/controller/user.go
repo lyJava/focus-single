@@ -10,7 +10,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// 用户管理
+// User 用户管理
 var User = cUser{}
 
 type cUser struct{}
