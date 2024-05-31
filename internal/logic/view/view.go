@@ -215,6 +215,8 @@ func (s *sView) getDefaultMainTpl(ctx context.Context) string {
 	if len(urlPathArray) > 0 && urlPathArray[0] == viewFolderPrefix {
 		urlPathArray = urlPathArray[1:]
 	}
+
+	log.Printf("页面路径切片:%v", urlPathArray)
 	switch {
 	case len(urlPathArray) == 2:
 		// 如果2级路由为数字，那么为模块的详情页面，那么路由固定为/xxx/detail。
@@ -225,6 +227,9 @@ func (s *sView) getDefaultMainTpl(ctx context.Context) string {
 		mainTpl = viewFolderPrefix + "/" + gfile.Join(urlPathArray[0], urlPathArray[1]) + ".html"
 	case len(urlPathArray) == 1:
 		mainTpl = viewFolderPrefix + "/" + urlPathArray[0] + "/index.html"
+	// 定义编辑页面模板路径
+	case len(urlPathArray) == 3:
+		mainTpl = viewFolderPrefix + "/" + urlPathArray[0] + "/update.html"
 	default:
 		// 默认首页内容
 		mainTpl = viewFolderPrefix + "/index/index.html"
