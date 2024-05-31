@@ -2,14 +2,13 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"github.com/gogf/gf/v2/frame/g"
-	"log"
-
 	"focus-single/api/v1"
 	"focus-single/internal/model"
 	"focus-single/internal/service"
+	"focus-single/internal/util"
+	"github.com/gogf/gf/v2/frame/g"
+	"log"
 )
 
 // Content 内容管理
@@ -46,42 +45,33 @@ func (a *cContent) Create(ctx context.Context, req *v1.ContentCreateReq) (res *v
 
 func (a *cContent) ShowUpdate(ctx context.Context, req *v1.ContentShowUpdateReq) (res *v1.ContentShowUpdateRes, err error) {
 	log.Printf("更新获取数据参数==%d", req.Id)
-	getDetailRes, err := service.Content().GetDetail(ctx, req.Id)
+	detailDataOut, err := service.Content().GetDetail(ctx, req.Id)
 	if err != nil {
 		log.Printf("更新获取数据错误==%+v", err)
 		return nil, errors.New("获取数据错误")
 	}
-	if getDetailRes == nil {
+	if detailDataOut == nil {
 		log.Println("无数据")
 		return nil, errors.New("无数据")
 	}
 
-	var list []interface{}
-	list = append(list, getDetailRes)
-	marshal, err := json.Marshal(&list)
-	g.Log().Infof(ctx, "更新获取数据==%s", string(marshal))
+	g.Log().Infof(ctx, "更新获取数据==%s", util.ToJsonFormat(detailDataOut, false))
 
-	getUser := service.Session().GetUser(ctx)
-	g.Log().Infof(ctx, "从会话中获取用户数据==%v", getUser)
-
-	getTitle := service.View().GetTitle(ctx, &model.ViewGetTitleInput{
-		ContentType: getDetailRes.Content.Type,
-		CategoryId:  getDetailRes.Content.CategoryId,
-		CurrentName: getDetailRes.Content.Title,
-	})
-
-	g.Log().Infof(ctx, "从会话中获取getTitle数据==%v", getTitle)
+	//getUser := service.Session().GetUser(ctx)
+	//g.Log().Infof(ctx, "更新获取用户数据==%s", util.ToJsonFormat(getUser, true))
 
 	service.View().Render(ctx, model.View{
-		ContentType: getDetailRes.Content.Type,
-		Data: map[string]interface{}{
-			"List": list,
-		},
-		Title: getTitle,
+		ContentType: detailDataOut.Content.Type,
+		Data:        detailDataOut,
+		Title: service.View().GetTitle(ctx, &model.ViewGetTitleInput{
+			ContentType: detailDataOut.Content.Type,
+			CategoryId:  detailDataOut.Content.CategoryId,
+			CurrentName: detailDataOut.Content.Title,
+		}),
 		BreadCrumb: service.View().GetBreadCrumb(ctx, &model.ViewGetBreadCrumbInput{
-			ContentId:   getDetailRes.Content.Id,
-			ContentType: getDetailRes.Content.Type,
-			CategoryId:  getDetailRes.Content.CategoryId,
+			ContentId:   detailDataOut.Content.Id,
+			ContentType: detailDataOut.Content.Type,
+			CategoryId:  detailDataOut.Content.CategoryId,
 		}),
 	})
 	return
