@@ -180,12 +180,18 @@ func CheckFileAndPermissions(path string) error {
 }
 
 // ToJsonFormat 返回格式化json
-func ToJsonFormat(data any) string {
+func ToJsonFormat(data any, format bool) string {
 	if data == "" {
 		return ""
 	}
+	var err error
+	var marshal []byte
+	if format {
+		marshal, err = json.MarshalIndent(data, "", "    ")
+	} else {
+		marshal, err = json.Marshal(data)
+	}
 
-	marshal, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
 		log.Printf("格式化json错误===%+v", err)
 		return ""
