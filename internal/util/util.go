@@ -1,16 +1,20 @@
 package util
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/spf13/cast"
 	"golang.org/x/net/html"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 // FormatGfTime 格式化时间
@@ -173,4 +177,87 @@ func CheckFileAndPermissions(path string) error {
 		return fmt.Errorf("not a regular file: %s", path)
 	}
 	return nil
+}
+
+// ToJsonFormat 返回格式化json
+func ToJsonFormat(data any) string {
+	if data == "" {
+		return ""
+	}
+
+	marshal, err := json.MarshalIndent(data, "", "    ")
+	if err != nil {
+		log.Printf("格式化json错误===%+v", err)
+		return ""
+	}
+	return string(marshal)
+}
+
+// ConvertJsonStrToSlice 将json字符串转换为切片
+func ConvertJsonStrToSlice(jsonStr string) []any {
+	if jsonStr == "" {
+		return nil
+	}
+	// Step 1: 将 JSON 字符串解析为 `any`
+	var rawData any
+	err := json.Unmarshal([]byte(jsonStr), &rawData)
+	if err != nil {
+		log.Printf("Error occurred json Unmarshal marshaling. Error:%+v", err)
+		return nil
+	}
+
+	// Step 2: 使用 cast.ToSlice 将 `interface{}` 转换为切片
+	return cast.ToSlice(rawData)
+}
+
+// CamelToSnakeCase 将驼峰转下划线方式
+func CamelToSnakeCase(s string) string {
+	var buffer bytes.Buffer
+	for i, r := range s {
+		if unicode.IsUpper(r) {
+			if i > 0 {
+				buffer.WriteRune('_')
+			}
+			buffer.WriteRune(unicode.ToLower(r))
+		} else {
+			buffer.WriteRune(r)
+		}
+	}
+	return buffer.String()
+}
+
+// PascalCaseToCamel 将首字母大写首字母大写的驼峰命名转换首字母小写的驼峰命名
+func PascalCaseToCamel(s string) string {
+	if s == "" || len(s) == 0 {
+		return s
+	}
+
+	runes := []rune(s)
+	runes[0] = unicode.ToLower(runes[0])
+	return string(runes)
+}
+
+// SnakeToCamel 将带有下划线的字符串转换为驼峰并且首字母小写
+func SnakeToCamel(s string) string {
+	var buffer bytes.Buffer
+	upperNext := false
+
+	for i, r := range s {
+		if r == '_' {
+			upperNext = true
+		} else {
+			if upperNext {
+				buffer.WriteRune(unicode.ToUpper(r))
+				upperNext = false
+			} else {
+				if i == 0 {
+					buffer.WriteRune(unicode.ToLower(r))
+				} else {
+					buffer.WriteRune(r)
+				}
+			}
+		}
+	}
+
+	return buffer.String()
 }
