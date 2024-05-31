@@ -113,8 +113,8 @@
         {{include "index/index/page_link.html" .}}
     </div>
 </div>
-<script type="application/javascript">
-    console.log("进入了详情页面")
+<script type="application/javascript" charset="UTF-8">
+    console.log("进入了详情页面");
     gf.content = {
         // 赞
         zan: function (elem, id) {
@@ -141,7 +141,7 @@
             {{end}}
         },
         adopted: function (id) {
-            adoptReply("/content/adopt/reply", "POST", `{{.Data.Content.Id}}`, id, "采纳成功")
+            adoptReply(`/content/adopt/reply`, `POST`, `{{.Data.Content.Id}}`, id, `采纳成功`)
             /*jQuery.ajax({
                 type: 'POST',
                 url: '/content/adopt/reply',
@@ -286,7 +286,7 @@
                 $(block).find('pre code').each(function (i, block) {
                     Prism.highlightElement(block);
                 });
-                $(block).attr("parsed", "true")
+                $(block).attr("parsed", "true");
             }
         });
         // 内容目录
@@ -297,10 +297,11 @@
         });
         // 仅有内容时才展示
         if ($('#gf-content-toc').text() != "undefined") {
-            $('.gf-content-toc').show()
+            $('.gf-content-toc').show();
         }
 
-        let editor = new Vditor('vditor', {
+        const editor = vditorInit(300, "~请开始你的表演...", undefined, 20 << 20);
+        /*let editor = new Vditor('vditor', {
             cdn: '/plugin/vditor/',
             theme: 'classic',
             height: 300,
@@ -354,7 +355,7 @@
             preview: {
                 maxWidth: 1920
             },
-        });
+        });*/
 
         $('.btn-submit').on('click', function () {
 
