@@ -583,7 +583,7 @@ const deleteReply = async (url, title, msg, ask) => {
         });
 
     } else {
-        await ajaxPromise(url, type, null, msg)
+        await ajaxPromise(url, "delete", null, msg)
             .then(async (message) => {
                 await swalSingleBtn("", message, "success", "确定", false).then(() => {
                     // 刷新页面同步回复统计
