@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"fmt"
 	"focus-single/internal/util"
 	"log"
 
@@ -319,12 +320,15 @@ func (s *sContent) Update(ctx context.Context, in model.ContentUpdateInput) erro
 func (s *sContent) Delete(ctx context.Context, id uint) error {
 	return dao.Content.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		user := service.BizCtx().Get(ctx).User
+		if user == nil {
+			return fmt.Errorf("未登录不允许操作")
+		}
 		log.Printf("是否是管理员:%t", user.IsAdmin)
 		// 管理员直接删除文章和评论
 		if user.IsAdmin {
 			var contentEntity *entity.Content
 			err := dao.Content.Ctx(ctx).TX(tx).Where(dao.Content.Columns().Id, id).Scan(&contentEntity)
-			if err == nil {
+			if err == nil && contentEntity != nil {
 				contentStr := contentEntity.Content
 				log.Printf("对应内容信息htmlStr:%s", contentStr)
 				if contentStr != "" {
@@ -343,7 +347,7 @@ func (s *sContent) Delete(ctx context.Context, id uint) error {
 				var replyEntity *entity.Reply
 				// TargetId为内容表的主键ID
 				err = dao.Reply.ReplyDao.Ctx(ctx).TX(tx).Where(dao.Reply.Columns().TargetId, id).Scan(&replyEntity)
-				if err == nil {
+				if err == nil && replyEntity != nil {
 					contentStr := replyEntity.Content
 					log.Printf("对应回复信息htmlStr:%s", contentStr)
 					if contentStr != "" {
