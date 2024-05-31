@@ -234,7 +234,9 @@ code[class*="language-"], pre[class*="language-"] {
 }
 
 .search-form {
+    display: flex;
     margin-left: 20px;
+    width: 130%;
 }
 
 /**************** 文章列表 ************************/
@@ -273,12 +275,22 @@ code[class*="language-"], pre[class*="language-"] {
 
 .gf-list-item-title {
     font-size: 16px;
-    line-height: 130%;
     text-shadow: 0 1px 0 #fff;
 }
 
 .gf-list-item-title a, .gf-list-item-title a:visited, .gf-list-item-title a:active {
+    margin-left: 10px;
     color: #222;
+}
+
+.operation_span {
+    font-size: 14px;
+    text-align: right;
+    margin-right: 10px;
+}
+
+.operation_span .a_delete {
+    color: #ee0808
 }
 
 .gf-list .sponsor-link img {

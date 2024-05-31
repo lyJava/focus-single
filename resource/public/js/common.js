@@ -303,7 +303,7 @@ const newSwal = (title, text, icon, buttons, dangerMode) => {
             icon: icon,
             //buttons: ["取消", "确定"],
             buttons: buttons,
-            dangerMode: dangerMode
+            dangerMode: dangerMode,
         }).then((value) => {
             resolve(value);
         }).catch((error) => {
@@ -360,7 +360,7 @@ const deleteReplyFunc = (url, id, successCallback, errorCallback) => {
 
 const ajaxPromise = (url, type, param, message) => {
     return new Promise((resolve, reject) => {
-        jQuery.ajax({
+        $.ajax({
             type: type,
             url: url,
             data: param,
@@ -509,17 +509,42 @@ const ajaxSubmitPromise = (form) => {
 /**
  * 文章发布表单提交
  *
- * @param jForm       jQuery表单元素对象
+ * @param jForm       jQuery表单对象
  * @param contentType 内容类型
+ * @param title       弹窗标题
  * @returns {Promise<void>}
  */
-const submitContentForm = async (jForm, contentType) => {
+const submitContentForm = async (jForm, contentType, title) => {
+    console.log("内容表单提交参数", contentType, title)
     await ajaxSubmitPromise(jForm).then(async (resp) => {
-        await newSwal("发布成功", resp.message, "success", ["继续发布", "查看详情"], false).then((val) => {
+        await newSwal(title + "成功", resp.message, "success", ["继续" + title, "查看详情"], false).then((val) => {
             if (val) {
-                const dataId = resp.data.contentId;
-                console.log("返回数据", resp.data, contentType)
-                window.location.href = `/article/${dataId}`
+                window.location.href = `/${contentType}/${resp.data.contentId}`;
+            } else {
+                window.location.reload();
+            }
+        }).catch((resp) => {
+            swalSingleBtn("", resp.message, "warning", "确定", false);
+        });
+    });
+}
+
+/**
+ * 内容修改表单提交
+ *
+ * @param jForm       jQuery表单对象
+ * @param contentType 内容类型
+ * @param contentId   内容ID
+ * @param title       弹窗标题
+ * @returns {Promise<void>}
+ */
+const submitContentUpdateForm = async (jForm, contentType, contentId) => {
+    console.log("内容修改表单参数", contentType, contentId);
+    await ajaxSubmitPromise(jForm).then(async (resp) => {
+        await newSwal("操作成功", "内容保存成功", "success", ["继续继续修改", "查看详情"], false).then((val) => {
+            if (val) {
+                console.log("返回数据", resp.data);
+                window.location.href = `/${contentType}/${contentId}`;
             } else {
                 window.location.reload();
             }
@@ -532,21 +557,42 @@ const submitContentForm = async (jForm, contentType) => {
 /**
  * 删除内容
  *
- * @param url     请求URL
- * @param type    请求类型
- * @param msg     成功提示信息
+ * @param url   请求URL
+ * @param title 内容标题
+ * @param msg   成功提示信息
+ * @param ask   是否询问
  * @returns {Promise<void>}
  */
-const deleteReply = async (url, type, msg) => {
-    await ajaxPromise(url, type, null, msg)
-        .then(async (message) => {
-            await swalSingleBtn("", message, "success", "确定", false).then(() => {
-                // 刷新页面同步回复统计
-                location.reload();
-            });
-        }).catch((message) => {
-            swalSingleBtn("", message, "warning", "确定", false);
+const deleteReply = async (url, title, msg, ask) => {
+    console.log("删除内容参数：", url, title);
+    if (ask) {
+        await newSwal("提示", `你确定要删除该【${title}】吗？`, "error", ["取消", "确定"], true).then(async res => {
+            if (res) {
+                await ajaxPromise(url, "delete", undefined, msg)
+                    .then(async (message) => {
+                        await swalSingleBtn("", message, "success", "确定", false).then(() => {
+                            // 刷新页面同步回复统计
+                            location.reload();
+                        });
+                    }).catch(async (message) => {
+                        await swalSingleBtn("", message, "warning", "确定", false);
+                    });
+            } else {
+                console.log("取消了操作");
+            }
         });
+
+    } else {
+        await ajaxPromise(url, type, null, msg)
+            .then(async (message) => {
+                await swalSingleBtn("", message, "success", "确定", false).then(() => {
+                    // 刷新页面同步回复统计
+                    location.reload();
+                });
+            }).catch(async (message) => {
+                await swalSingleBtn("", message, "warning", "确定", false);
+            });
+    }
 }
 
 /**
@@ -554,10 +600,11 @@ const deleteReply = async (url, type, msg) => {
  *
  * @param height        高度
  * @param placeholder   提示信息
+ * @param content       富文本内容
  * @param uploadMaxSize 文件上传最大字节
  * @returns {编辑器}
  */
-const vditorInit = (height, placeholder, uploadMaxSize) => {
+const vditorInit = (height, placeholder, content, uploadMaxSize) => {
     // 编辑器初始化
     return new Vditor('vditor', {
         cdn:'/plugin/vditor/',
@@ -567,6 +614,7 @@ const vditorInit = (height, placeholder, uploadMaxSize) => {
         mode  : 'wysiwyg',
         cache : {enable: false},
         placeholder: placeholder,
+        value: content,
         toolbar: [
             "emoji",
             "headings",
