@@ -29,7 +29,7 @@ func New() *sCaptcha {
 func newDriver() *base64Captcha.DriverString {
 	driver := &base64Captcha.DriverString{
 		Height:          44,
-		Width:           126,
+		Width:           130,
 		NoiseCount:      2,
 		ShowLineOptions: base64Captcha.OptionShowHollowLine | base64Captcha.OptionShowHollowLine | base64Captcha.OptionShowHollowLine,
 		Length:          4,
