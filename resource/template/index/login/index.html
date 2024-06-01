@@ -1,7 +1,7 @@
 
 
 <div class="row">
-    <div class="col-md-6 offset-md-3 gf-login">
+    <div class="col-lg-6 col-md-6 col-sm-6 offset-lg-3 offset-md-3 offset-sm-3 gf-login">
         <div class="card">
             <div class="card-header">
                 <span class="iconfont">&#xe6c9;</span> 用户登录
@@ -9,33 +9,32 @@
             <div class="card-body">
                 <form id="loginForm" action="/login" method="post">
                     <div class="form-group row">
-                        <label class="col-sm-3 col-form-label required text-right">账号：</label>
-                        <div class="col-sm-9">
-                            <input type="text" class="form-control" minlength="3" maxlength="20" name="passport" placeholder="请输入账号" value="goframe" required />
+                        <label class="col-lg-3 col-md-3 col-sm-3 col-form-label required text-right">账号：</label>
+                        <div class="col-lg-9 col-md-9 col-sm-9">
+                            <input type="text" class="form-control" minlength="3" maxlength="20" name="passport" placeholder="请输入账号" required />
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-3 col-form-label required text-right">密码：</label>
-                        <div class="col-sm-9">
-                            <input type="password" class="form-control" minlength="6" maxlength="20" name="password" placeholder="请输入密码" value="123456" required />
+                        <label class="col-lg-3 col-md-3 col-sm-3 col-form-label required text-right">密码：</label>
+                        <div class="col-lg-9 col-md-9 col-sm-9">
+                            <input type="password" class="form-control" minlength="6" maxlength="20" name="password" placeholder="请输入密码"  required />
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-3 col-form-label required text-right">验证码</label>
-                        <div class="col-sm-9">
+                        <label class="col-lg-3 col-md-3 col-sm-3 col-form-label required text-right">验证码</label>
+                        <div class="col-lg-9 col-md-9 col-sm-9">
                             <div class="input-group mb-3">
                                 <input type="text" class="form-control" minlength="4" maxlength="4"  name="captcha" placeholder="请输入正确的验证码" required />
                                 <div class="input-group-append">
                                     <span class="input-group-text" style="cursor: pointer;padding: 0;">
-                                        <img id="code-img" class="captcha" loading="lazy" onclick="gf.reloadCaptcha()"/>
+                                        <img id="code-img" class="captcha" loading="lazy" onclick="gf.reloadCaptcha()" alt="验证码"/>
                                     </span>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                     <div class="form-group row">
-                        <div class="col-sm-3 offset-md-3">
+                        <div class="col-lg-3 col-md-3 col-sm-3 offset-lg-3 offset-md-3 offset-sm-3">
                             <button type="submit" class="btn btn-primary btn-block">登录</button>
                         </div>
                     </div>
@@ -99,14 +98,14 @@ jQuery(function($) {
                             button: "确定",
                         });
                         $('[name="password"]').val('');
-                        gf.reloadCaptcha()
+                        gf.reloadCaptcha();
                     }
                 }
             });
             $('button[type=submit]').removeAttr('disabled');
         },
         errorPlacement: function (error, element) {
-            element.addClass("is-invalid")
+            element.addClass("is-invalid");
             error.appendTo(element.parent());
         }
     });

@@ -1,8 +1,8 @@
 <div class="row gf-list">
-    <div class="col-md-2 offset-md-1">
+    <div class="col-lg-2 col-md-2 col-sm-2 offset-lg-1 offset-md-1 offset-sm-1">
         {{include "index/user/user_menu.html" .}}
     </div>
-    <div class="col-md-8">
+    <div class="col-lg-8 col-md-8 col-sm-8">
         <div class="card gf-person">
             <div class="card-header">
                 <span class="iconfont">&#xe622;</span> 基本资料
@@ -10,46 +10,42 @@
             <div class="card-body">
                 <form id="profileForm" action="/profile" method="post">
                     <div class="form-group row">
-                        <label for="passport" class="col-sm-2 col-form-label">账号</label>
-                        <div class="col-sm-10">
-                            <input type="text" readonly class="form-control-plaintext" id="passport" value="{{.Context.User.Passport}}">
+                        <label for="passport" class="col-lg-1 col-md-1 col-sm-1 col-form-label text-right">账号</label>
+                        <div class="col-lg-5 col-md-5 col-sm-5">
+                            <input type="text" class="form-control-plaintext" id="passport" value="{{.Context.User.Passport}}" readonly disabled/>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="nickname" class="col-sm-2 col-form-label">昵称</label>
-                        <div class="col-sm-10">
+                        <label for="nickname" class="col-lg-1 col-md-1 col-sm-1 col-form-label text-right">昵称</label>
+                        <div class="col-lg-5 col-md-5 col-sm-5">
                             <input type="text" class="form-control" id="nickname" minlength="3" maxlength="20" name="nickname" value="{{ .Data.Nickname}}"
                                    placeholder="请输入昵称" required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="gender0" class="col-sm-2 col-form-label">性别</label>
-                        <div class="col-sm-10">
+                        <label for="gender0" class="col-lg-1 col-md-1 col-sm-1 col-form-label text-right">性别</label>
+                        <div class="col-lg-5 col-md-5 col-sm-5 mt-2">
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" id="gender0" {{if eq .Data.Gender 0}}checked{{end}} name="gender" value="0" required >
+                                <input class="form-check-input" type="radio" id="gender0" {{if eq .Data.Gender 0}}checked{{end}} name="gender" value="0" required />
                                 <label class="form-check-label" for="gender0">未知</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" id="gender1" {{if eq .Data.Gender 1}}checked{{end}} name="gender" value="1">
+                                <input class="form-check-input" type="radio" id="gender1" {{if eq .Data.Gender 1}}checked{{end}} name="gender" value="1"/>
                                 <label class="form-check-label" for="gender1">男</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" id="gender2" {{if eq .Data.Gender 2}}checked{{end}} name="gender" value="2">
+                                <input class="form-check-input" type="radio" id="gender2" {{if eq .Data.Gender 2}}checked{{end}} name="gender" value="2"/>
                                 <label class="form-check-label" for="gender2">女</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group row">
-                        <div class="col-sm-3 offset-md-2">
+                        <div class="col-lg-2 col-md-2 col-sm-2 offset-lg-1 offset-md-1 offset-sm-1">
                             <button type="submit" class="btn btn-primary btn-block">保存</button>
                         </div>
                     </div>
 
-
-                    <div class="form-group row">
-
-                    </div>
                 </form>
             </div>
         </div>
