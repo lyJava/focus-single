@@ -3,7 +3,11 @@ package user
 import (
 	"context"
 	"fmt"
+	"focus-single/internal/consts"
+	"focus-single/internal/dao"
+	"focus-single/internal/model"
 	"focus-single/internal/model/do"
+	"focus-single/internal/model/entity"
 	"focus-single/internal/service"
 	"github.com/gogf/gf/v2/crypto/gmd5"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -13,11 +17,6 @@ import (
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/o1egl/govatar"
-
-	"focus-single/internal/consts"
-	"focus-single/internal/dao"
-	"focus-single/internal/model"
-	"focus-single/internal/model/entity"
 )
 
 type sUser struct {
@@ -223,7 +222,7 @@ func (s *sUser) UpdateProfile(ctx context.Context, in model.UserUpdateProfileInp
 			user   = service.BizCtx().Get(ctx).User
 			userId = user.Id
 		)
-		n, err := dao.User.Ctx(ctx).
+		n, err := dao.User.Ctx(ctx).TX(tx).
 			Where(dao.User.Columns().Nickname, in.Nickname).
 			WhereNot(dao.User.Columns().Id, userId).
 			Count()
@@ -235,15 +234,39 @@ func (s *sUser) UpdateProfile(ctx context.Context, in model.UserUpdateProfileInp
 			g.Log().Errorf(ctx, "昵称：%s已被占用", in.Nickname)
 			return gerror.Newf(`昵称"%s"已被占用`, in.Nickname)
 		}
-		_, err = dao.User.Ctx(ctx).OmitEmpty().Data(in).Where(dao.User.Columns().Id, userId).Update()
+
+		// .OmitEmpty()会过滤空值及默认值
+		// _, err = dao.User.Ctx(ctx).TX(tx).OmitEmpty().Data(in).Where(dao.User.Columns().Id, userId).Update()
+		whereMap := g.Map{}
+		if in.Nickname != "" {
+			whereMap[dao.User.Columns().Nickname] = in.Nickname
+		}
+		if in.Gender != 0 {
+			whereMap[dao.User.Columns().Gender] = in.Gender
+		}
+		if in.Avatar != "" {
+			whereMap[dao.User.Columns().Avatar] = in.Avatar
+		}
+
+		if len(whereMap) == 0 {
+			return gerror.New(`没有更新的值，无法进行操作`)
+		}
+
+		_, err = dao.User.Ctx(ctx).TX(tx).
+			Data(whereMap).
+			Where(dao.User.Columns().Id, userId).
+			Update()
 		// 更新登录session Nickname
 		if err == nil && user.Nickname != in.Nickname {
 			sessionUser := service.Session().GetUser(ctx)
 			sessionUser.Nickname = in.Nickname
 			err = service.Session().SetUser(ctx, sessionUser)
 		}
-		g.Log().Errorf(ctx, "修改个人资料错误===%+v", err)
-		return err
+		if err != nil {
+			g.Log().Errorf(ctx, "修改个人资料错误===%+v", err)
+			return err
+		}
+		return nil
 	})
 
 }

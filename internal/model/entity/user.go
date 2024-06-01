@@ -16,7 +16,7 @@ type User struct {
 	Nickname  string      `json:"nickname"  description:"昵称"`
 	Avatar    string      `json:"avatar"    description:"头像地址"`
 	Status    int         `json:"status"    description:"状态 0:启用 1:禁用"`
-	Gender    int         `json:"gender"    description:"性别 0: 未设置 1: 男 2: 女"`
+	Gender    int         `json:"gender"    description:"性别 3: 未设置 1: 男 2: 女"`
 	CreatedAt *gtime.Time `json:"createdAt" description:"注册时间"`
 	UpdatedAt *gtime.Time `json:"updatedAt" description:"更新时间"`
 }

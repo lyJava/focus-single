@@ -25,12 +25,12 @@ type UserColumns struct {
 	Nickname  string // 昵称
 	Avatar    string // 头像地址
 	Status    string // 状态 0:启用 1:禁用
-	Gender    string // 性别 0: 未设置 1: 男 2: 女
+	Gender    string // 性别 3: 未设置 1: 男 2: 女
 	CreatedAt string // 注册时间
 	UpdatedAt string // 更新时间
 }
 
-//  userColumns holds the columns for table gf_user.
+// userColumns holds the columns for table gf_user.
 var userColumns = UserColumns{
 	Id:        "id",
 	Passport:  "passport",

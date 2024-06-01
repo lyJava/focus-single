@@ -15,7 +15,7 @@ type ProfileUpdateReq struct {
 	g.Meta   `path:"/profile" method:"post" summary:"修改个人资料" tags:"个人"`
 	Id       uint   `json:"id"     dc:"用户ID"`
 	Avatar   string `json:"avatar" dc:"头像地址"`
-	Gender   int    `json:"gender" dc:"性别 0: 未设置 1: 男 2: 女"`
+	Gender   int    `json:"gender" dc:"性别 3: 未设置 1: 男 2: 女"`
 	Nickname string `json:"nickname" v:"required#请输入昵称信息" dc:"昵称"`
 }
 type ProfileUpdateRes struct{}
