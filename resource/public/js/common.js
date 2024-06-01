@@ -26,9 +26,10 @@ gf.user = {
 // 内容模块
 gf.content = {
     // 删除内容
-    delete: function (id, url) {
-        url = url || "/"
-        swal({
+    delete: function (id, url, title) {
+        // url = url || "/"
+        personalContentDelete({id}, title, "删除成功", url);
+        /* swal({
             title: "删除内容",
             text: "您确定要删除该内容吗？",
             icon: "warning",
@@ -51,11 +52,11 @@ gf.content = {
                             buttons: false
                         }).then((value) => {
                             window.location.href = url;
-                        })
+                        });
                     }
                 });
             }
-        });
+        }); */
     }
 }
 
@@ -235,13 +236,42 @@ jQuery(function ($) {
 })
 
 /**
+ * 个人中心内容删除
+ * 
+ * @param url         请求URL
+ * @param param       请求参数
+ * @param content     内容标题
+ * @param redirectUrl 跳转URL
+ */
+const personalContentDelete = async (param, title, message, redirectUrl) => {
+    console.log("个人中心内容删除参数", param, title, redirectUrl);
+    await newSwal("提醒", `你确定删除该内容【${title}】吗？`, `warning`, ["取消", "确定"], true).then(async val => {
+        if (val) {
+            await ajaxPromise(`/content/delete`, "DELETE", param, message).then(resp => {
+                swal({
+                    title: resp,
+                    text: "2秒后自动刷新当前页面",
+                    icon: "success",
+                    timer: 2000,
+                    buttons: false
+                }).then(() => {
+                    window.location.href = redirectUrl || "/";
+                });
+            });
+        } else {
+            console.log("取消了内容删除操作");
+        }
+    });
+}
+
+/**
  * 点击踩
  *
- * @param url
- * @param type
- * @param param
- * @param message
- * @param ele
+ * @param url     请求URL
+ * @param type    请求类型
+ * @param param   请求参数
+ * @param message 提示信息
+ * @param ele     html元素选择器
  * @returns {Promise<void>}
  */
 const clickCai = async (url, type, param, message, ele) => {
@@ -262,11 +292,11 @@ const clickCai = async (url, type, param, message, ele) => {
 /**
  * 取消踩
  *
- * @param url
- * @param type
- * @param param
- * @param message
- * @param ele
+ * @param url     请求URL
+ * @param type    请求类型
+ * @param param   请求参数
+ * @param message 提示信息
+ * @param ele     html元素选择器
  * @returns {Promise<void>}
  */
 const cancelCai = async (url, type, param, message, ele) => {
@@ -358,6 +388,16 @@ const deleteReplyFunc = (url, id, successCallback, errorCallback) => {
     });
 }
 
+
+/**
+ * ajax的Promise方式
+ * 
+ * @param {*} url      请求URL
+ * @param {*} type     请求类型
+ * @param {*} param    请求参数
+ * @param {*} message  响应信息
+ * @returns 
+ */
 const ajaxPromise = (url, type, param, message) => {
     return new Promise((resolve, reject) => {
         $.ajax({
@@ -391,13 +431,13 @@ const deleteConfirmation = (url, id) => {
         if (value) {
             deleteReplyFunc(url, id,
                 function (message) {
-                    swal({text: message, icon: "success", button: "确定"}).then(
+                    swal({ text: message, icon: "success", button: "确定" }).then(
                         function () {
                             location.reload(); // 刷新页面同步回复统计
                         });
                 },
                 function (message) {
-                    swal({text: message, icon: "warning", button: "确定"});
+                    swal({ text: message, icon: "warning", button: "确定" });
                 }
             );
         } else {
@@ -416,7 +456,7 @@ const deleteConfirmation = (url, id) => {
 const deleteConfirmationPromise = async (url, id) => {
     await newSwal("删除回复", "您确定删除回复吗？", "warning", ["取消", "确定"], true).then(async (value) => {
         if (value) {
-            await ajaxPromise(url, "DELETE", {id}, "删除成功")
+            await ajaxPromise(url, "DELETE", { id }, "删除成功")
                 .then(async (message) => {
                     await swalSingleBtn("", message, "success", "确定", false).then(() => {
                         // 刷新页面同步回复统计
@@ -424,7 +464,7 @@ const deleteConfirmationPromise = async (url, id) => {
                     });
                 })
                 .catch((message) => {
-                    swal({text: message, icon: "warning", button: "确定"});
+                    swal({ text: message, icon: "warning", button: "确定" });
                 });
         } else {
             console.log("删除回复取消了");
@@ -433,7 +473,7 @@ const deleteConfirmationPromise = async (url, id) => {
 }
 
 const loadReplyData = async (url, type, param) => {
-    return await ajaxPromise(url, type, param, "")
+    return await ajaxPromise(url, type, param, "");
 }
 
 /**
@@ -447,7 +487,7 @@ const loadReplyData = async (url, type, param) => {
  * @returns {Promise<void>}
  */
 const adoptReply = async (url, type, id, replyId, msg) => {
-    await ajaxPromise(url, type, {id, replyId}, msg)
+    await ajaxPromise(url, type, { id, replyId }, msg)
         .then(async (message) => {
             await swalSingleBtn("", message, "success", "确定", false).then(() => {
                 // 刷新页面同步回复统计
@@ -662,8 +702,8 @@ const vditorInit = (height, placeholder, content, uploadMaxSize) => {
             },
             // 格式化上传返回
             format(file, response) {
-                const {code, data, message} = JSON.parse(response)
-                return JSON.stringify({message, code, data: {errFiles: [], succMap: {"image.png": data.url}}})
+                const { code, data, message } = JSON.parse(response)
+                return JSON.stringify({ message, code, data: { errFiles: [], succMap: { "image.png": data.url } } })
             }
         },
         preview: {
