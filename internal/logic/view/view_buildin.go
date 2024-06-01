@@ -10,6 +10,7 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmode"
+	"html/template"
 
 	"focus-single/internal/consts"
 	"focus-single/internal/model"
@@ -176,6 +177,11 @@ func (s *viewBuildIn) UrlPath() string {
 // FormatTime 格式化时间
 func (s *viewBuildIn) FormatTime(gt *gtime.Time) string {
 	return util.FormatGfTime(gt)
+}
+
+// HTMLEscapeStr 转义 HTML 标签
+func (s *viewBuildIn) HTMLEscapeStr(htmlStr string) string {
+	return template.HTMLEscapeString(htmlStr)
 }
 
 // Version 随机数 开发环境时间戳，线上为前端版本号
