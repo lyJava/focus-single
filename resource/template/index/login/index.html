@@ -1,40 +1,39 @@
-
-
 <div class="row">
-    <div class="col-lg-6 col-md-6 col-sm-6 offset-lg-3 offset-md-3 offset-sm-3 gf-login">
+    <div class="col-lg-4 col-md-4 col-sm-4 offset-lg-4 offset-md-4 offset-sm-4 mt-2 gf-login">
         <div class="card">
             <div class="card-header">
-                <span class="iconfont">&#xe6c9;</span> 用户登录
+                <span class="iconfont">&#xe6c9;</span>
+                <span style="font-size: 18px;">用户登录</span>
             </div>
             <div class="card-body">
                 <form id="loginForm" action="/login" method="post">
                     <div class="form-group row">
-                        <label class="col-lg-3 col-md-3 col-sm-3 col-form-label required text-right">账号：</label>
+                        <label class="col-lg-2 col-md-2 col-sm-2 col-form-label required text-right" for="passport">账号：</label>
                         <div class="col-lg-9 col-md-9 col-sm-9">
-                            <input type="text" class="form-control" minlength="3" maxlength="20" name="passport" placeholder="请输入账号" required />
+                            <input type="text" class="form-control"  minlength="3" maxlength="20" id="passport" name="passport" placeholder="请输入账号" required />
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-md-3 col-sm-3 col-form-label required text-right">密码：</label>
+                        <label class="col-lg-2 col-md-2 col-sm-2 col-form-label required text-right" for="password">密码：</label>
                         <div class="col-lg-9 col-md-9 col-sm-9">
-                            <input type="password" class="form-control" minlength="6" maxlength="20" name="password" placeholder="请输入密码"  required />
+                            <input type="password" class="form-control" minlength="6" maxlength="20" id="password" name="password" placeholder="请输入密码"  required />
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-md-3 col-sm-3 col-form-label required text-right">验证码</label>
+                        <label class="col-lg-2 col-md-2 col-sm-2 col-form-label required text-right" for="captcha">验证码</label>
                         <div class="col-lg-9 col-md-9 col-sm-9">
                             <div class="input-group mb-3">
-                                <input type="text" class="form-control" minlength="4" maxlength="4"  name="captcha" placeholder="请输入正确的验证码" required />
+                                <input type="text" class="form-control" minlength="4" maxlength="4" id="captcha"  name="captcha" placeholder="请输入正确的验证码" required />
                                 <div class="input-group-append ml-2">
-                                    <span class="input-group-text" style="cursor: pointer;padding: 0;">
-                                        <img id="code-img" src="" class="captcha" loading="lazy" onclick="gf.reloadCaptcha()" alt="验证码" width="130"/>
+                                    <span class="input-group-text " style="cursor: pointer;padding: 0;">
+                                        <img id="code-img" src="" class="captcha" loading="lazy" onclick="gf.reloadCaptcha('code-img')" alt="验证码" width="130" title="看不清？点击刷新"/>
                                     </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <div class="col-lg-3 col-md-3 col-sm-3 offset-lg-3 offset-md-3 offset-sm-3">
+                        <div class="col-lg-4 col-md-4 col-sm-4 offset-lg-2 offset-lg-2 offset-md-2 offset-sm-2">
                             <button type="submit" class="btn btn-primary btn-block">登录</button>
                         </div>
                     </div>
@@ -68,11 +67,15 @@ jQuery(function($) {
             }
         },
         submitHandler: function(form) {
-            $('button[type=submit]').attr('disabled', 'true');
+            const $button = $('button[type=submit]');
+            $button.attr('disabled', 'true');
+            const $password = $("#password");
 
-            let passport = $('[name="passport"]').val();
-            let password = $('[name="password"]').val();
-            $('[name="password"]').val(hex_md5(passport + password));
+            // let passport = $('[name="passport"]').val();
+            // let password = $('[name="password"]').val();
+            const passport = $("#passport").val();
+            const password = $password.val();
+            $password.val(hex_md5(passport + password));
 
             jQuery(form).ajaxSubmit({
                 dataType: 'json',
@@ -82,7 +85,7 @@ jQuery(function($) {
                             title:   "登录成功",
                             text:    "页面将自动跳转到登录前页面",
                             icon:    "success",
-                            timer:   2000,
+                            timer:   300,
                             buttons: false
                         }).then((value) => {
                             if (r.redirect !== "") {
@@ -97,12 +100,12 @@ jQuery(function($) {
                             icon:   "warning",
                             button: "确定",
                         });
-                        $('[name="password"]').val('');
+                        $password.val('');
                         gf.reloadCaptcha();
                     }
                 }
             });
-            $('button[type=submit]').removeAttr('disabled');
+            $button.removeAttr('disabled');
         },
         errorPlacement: function (error, element) {
             element.addClass("is-invalid");

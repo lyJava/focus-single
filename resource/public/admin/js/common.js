@@ -1,8 +1,8 @@
 // 全局管理对象
 gf = {
     // 刷新验证码
-    reloadCaptcha: function() {
-        $("img.captcha").attr("src","/captcha?v="+Math.random());
+    reloadCaptcha: function(imgId) {
+        $("#"+imgId).attr("src","/captcha?v="+Math.random());
     },
 }
 
@@ -18,7 +18,7 @@ gf.handleAjaxSuccess = function (r, callback) {
         case  1: options.icon = "error";   break; // 执行报错
         case -1: options.icon = "info";    break; // 用户需要登录
     }
-    if (typeof options.text == "undefined" || options.text.length == 0 ) {
+    if (typeof options.text == "undefined" || options.text.length === 0 ) {
         switch (options.icon) {
             case "success": options.text = "请求执行成功"; break;
             case "error":   options.text = "请求执行失败"; break;
@@ -47,7 +47,7 @@ gf.handleAjaxError = function (r, callback) {
         text:              "系统错误",
         confirmButtonText: "确定"
     }
-    if (r.responseText != "") {
+    if (r.responseText !== "") {
         options.title = "系统错误"
         options.text  = r.responseText
     }
