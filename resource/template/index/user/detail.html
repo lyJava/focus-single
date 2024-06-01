@@ -1,5 +1,5 @@
 <div class="row gf-list">
-    <div class="col-md-2">
+    <div class="col-lg-2 col-md-2 col-sm-2">
         <div class="card gf-card">
             <!-- 变量提取 -->
             {{ $cate := .Query.cate }}
@@ -7,26 +7,30 @@
             {{ $userId := .Data.User.Id }}
             <div class="card-header">他的创作</div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item gf-list-item"><span class="icon iconfont">&#xe622;</span>
+                <li class="list-group-item gf-list-item">
+                    <span class="icon iconfont">&#xe622;</span>
                     <a href="/user/{{$userId}}">全部资料</a>
                 </li>
-                <li class="list-group-item gf-list-item"><span class="icon iconfont">&#xe61c;</span>
+                <li class="list-group-item gf-list-item">
+                    <span class="icon iconfont">&#xe61c;</span>
                     <a href="/user/{{$userId}}?type=article">Ta的文章</a>
                     <span class="badge badge-primary" style="float: right;">{{or .Data.Stats.article 0}}</span>
                 </li>
-                <li class="list-group-item gf-list-item"><span class="icon iconfont">&#xe6b3;</span>
+                <li class="list-group-item gf-list-item">
+                    <span class="icon iconfont">&#xe6b3;</span>
                     <a href="/user/{{$userId}}?type=topic">Ta的主题</a>
                     <span class="badge badge-primary" style="float: right;">{{or .Data.Stats.topic 0}}</span>
                 </li>
-                <li class="list-group-item gf-list-item"><span class="icon iconfont">&#xe717;</span>
+                <li class="list-group-item gf-list-item">
+                    <span class="icon iconfont">&#xe717;</span>
                     <a href="/user/{{$userId}}?type=ask">Ta的问答</a>
                     <span class="badge badge-primary" style="float: right;">{{or .Data.Stats.ask 0}}</span>
                 </li>
             </ul>
         </div>
     </div>
-   
-    <div class="col-md-8">
+
+    <div class="col-lg-8 col-md-8 col-sm-8">
         <ul class="list-group">
             <li class="list-group-item gf-list-item">
                 社区 原创者的天地
@@ -62,7 +66,7 @@
             </li>
             {{end}}
 
-            
+
             {{if .Data.Content}}
             {{range $index, $item := .Data.Content.List}}
             <li class="list-group-item gf-list-item">
@@ -83,7 +87,8 @@
                             <span class="icon iconfont">&#xe6ab;</span> {{$item.Content.ReplyCount}}
                             &nbsp;&nbsp;|&nbsp;&nbsp;
                         </span>
-                        <span style="font-size: 12px;color: #ccc;">{{$item.Content.CreatedAt | $.BuildIn.FormatTime}}</span>
+                        <span style="font-size: 12px;color: #ccc;">{{$item.Content.CreatedAt |
+                            $.BuildIn.FormatTime}}</span>
                         {{if $.Context.User}}
                         {{if eq $.Data.User.Id $.Context.User.Id}}
                         <span style="font-size: 12px;color: #ccc;text-align: right;">
@@ -92,7 +97,7 @@
                             &nbsp;|&nbsp;&nbsp; <a href="javascript:void(0);" title="删除"
                                 onclick="gf.content.delete({{$item.Content.Id}},'/user/{{$.Data.User.Id}}?type={{$item.Category.ContentType}}&cate={{$cate}}', '{{$item.Content.Title}}')"><span
                                     class="icon iconfont" style="color: rgb(238, 22, 22);">&#xe63c;</span>
-                                </a>
+                            </a>
                         </span>
                         {{end}}
                         {{end}}
@@ -117,7 +122,7 @@
         </ul>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-lg-2 col-md-2 col-sm-2">
 
         <div class="gf-user">
             <div class="gf-user-title">
