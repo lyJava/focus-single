@@ -2,6 +2,7 @@ package reply
 
 import (
 	"context"
+	"errors"
 	"focus-single/internal/dao"
 	"focus-single/internal/model"
 	"focus-single/internal/model/entity"
@@ -46,6 +47,11 @@ func (s *sReply) Delete(ctx context.Context, id uint) error {
 		if err != nil {
 			g.Log().Errorf(ctx, "查询回复错误===%+v", err)
 			return err
+		}
+
+		if reply == nil {
+			g.Log().Errorf(ctx, "当前回复:%d不存在", id)
+			return errors.New("当前回复信息不存在")
 		}
 
 		replyContent := reply.Content
