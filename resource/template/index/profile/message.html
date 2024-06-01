@@ -1,26 +1,27 @@
 <div class="row gf-list">
-    <div class="col-md-2 offset-md-1">
+    <div class="col-lg-2 col-md-2 col-sm-2 offset-lg-1 offset-md-1 offset-sm-1">
         {{include "index/user/user_menu.html" .}}
     </div>
-    <div class="col-md-8">
+    <div class="col-lg-8 col-md-8 col-sm-8">
         <div class="card gf-person">
             <div class="card-header">
-                <span class="iconfont">&#xe60e;</span> 我的消息 {{.Query.targetType}}
+                <span class="iconfont">&#xe60e;&nbsp;</span>我的消息 {{.Query.targetType}}
             </div>
             <div class="card-body">
                 <ul class="list-group">
                     <li class="list-group-item gf-list-item">
-                        <a class="btn btn-link text-primary top-node-btn btn-sm"
-                           href="/profile/message?type=1">内容回复</a>
-<!--                        <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"-->
-<!--                           href="javascript:alert('敬请期待');">个人私信</a>-->
-<!--                        <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"-->
-<!--                           href="javascript:alert('敬请期待');">系统消息</a>-->
+                        <a class="btn btn-link text-primary top-node-btn btn-sm" href="/profile/message?type=1">
+                            <h4>内容回复</h4>
+                        </a>
+                        <!--  <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"-->
+                        <!--     href="javascript:alert('敬请期待');">个人私信</a>-->
+                        <!--   <a class="btn btn-link {{if not $.Query.type}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"-->
+                        <!--    href="javascript:alert('敬请期待');">系统消息</a>-->
                     </li>
 
 
                     {{range $index, $item := .Data.List}}
-                    <li class="list-group-item gf-list-item list-group-item-action">
+                    <li class="list-group-item list-group-item-action gf-list-item">
                         {{if $item.User}}
                         <h5 class="mb-1">
                             <img class="nav-avatar" src="{{$item.User.Avatar}}" alt="" width="36" height="36"/>
@@ -31,38 +32,47 @@
                             匿名用户
                         </h3>
                         {{end}}
-                        <small style="margin-left: 15px;display: inline-flex ;line-height: 15px;">{{$item.Reply.CreatedAt | $.BuildIn.FormatTime}}</small>
 
-                        <div class="gf-list-item-text">
+                        <div class="gf-list-item-text" style="width: 100%">
                             <div class="float-left">
                                 {{if $item.Category}}
                                 <span class="badge badge-primary float-left">{{$item.Category.Name}}</span>
-                                    {{else}}
-                                <span class="badge badge-secondary float-left">未分类</span>
-                                    {{end}}
-
-                                {{if $item.Content}}
-                                    <a href="/{{$item.Reply.TargetType}}/{{$item.Reply.TargetId}}"
-                                   class="d-inline-block text-truncate float-left" style="max-width: 400px;margin-left: 10px;color: #222;" title="{{$item.Reply.Content}}">{{$item.Content.Title}} </a>
                                 {{else}}
-                                <span
-                                   class="d-inline-block text-truncate float-left" style="max-width: 400px;margin-left: 10px;color: #222;" title="{{$item.Reply.Content}}">暂无内容 </span>
+                                <span class="badge badge-secondary float-left">未分类</span>
                                 {{end}}
 
-                                <span  class="d-inline-block float-left">&nbsp;&nbsp;回复内容:&nbsp;&nbsp;</span>
-                                <span  class="d-inline-block text-truncate float-left" style="max-width: 400px;">{{$item.Reply.Content}}</span>
+                                {{if $item.Content}}
+                                <a href="/{{$item.Reply.TargetType}}/{{$item.Reply.TargetId}}"
+                                   class="d-inline-block text-truncate float-left"
+                                   style="margin-left: 10px;color: #222;"
+                                   title="查看详情">
+                                    {{$item.Content.Title | $.BuildIn.HTMLEscapeStr}} </a>
+                                {{else}}
+                                <span class="d-inline-block text-truncate float-left"
+                                      style="max-width: 400px;margin-left: 10px;color: #222;"
+                                      title="{{$item.Reply.Content}}">暂无内容</span>
+                                {{end}}
+
+                                <span class="d-inline-block float-left">&nbsp;&nbsp;回复内容:&nbsp;&nbsp;</span>
+                                <span class="d-inline-block text-truncate float-left"
+                                      style="max-width: 400px;">{{$item.Reply.Content}}
+                                </span>
 
                             </div>
                             <div class="float-right">
-                            <span style="font-size: 12px;color: #ccc;text-align: right;">
-                                <span class="icon iconfont icon-cai"></span> {{$item.Reply.CaiCount}}
-                                &nbsp;&nbsp;|&nbsp;&nbsp;
-                                <span class="icon iconfont icon-zan"></span> {{$item.Reply.ZanCount}}
-                                &nbsp;&nbsp;|&nbsp;&nbsp;
-                            &nbsp;   <a href="javascript:gf.content.delete({{ $item.Reply.Id }});"  title="点击删除">
-                                    <span class="icon iconfont" style="color: red;">&#xe63c;</span>
-                                </a>
-                            </span>
+                                <small style="margin-right: 15px;line-height: 15px;">
+                                    {{$item.Reply.CreatedAt | $.BuildIn.FormatTime}}
+                                </small>
+                                <span style="font-size: 12px;color: #ccc;text-align: right;">
+                                    <span class="icon iconfont icon-cai"></span> {{$item.Reply.CaiCount}}
+                                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                                    <span class="icon iconfont icon-zan"></span> {{$item.Reply.ZanCount}}
+                                    &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+                                    <a href="javascript:gf.personal.deleteMessage({{ $item.Reply.Id }})"
+                                       title="点击删除">
+                                        <span class="icon iconfont" style="color: red;">&#xe63c;</span>
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </li>
@@ -81,39 +91,3 @@
     </div>
 
 </div>
-<script>
-    $("#user-message").addClass("active");
-
-    gf.content = {
-        delete: function (id) {
-            swal({
-                title:   "删除回复",
-                text:    "您确定删除回复信息吗？",
-                icon:    "warning",
-                buttons: ["取消", "确定"]
-            }).then((value) => {
-                jQuery.ajax({
-                    type: 'DELETE',
-                    url: '/reply/delete',
-                    data: {
-                        id: id,
-                    },
-                    success: function (r) {
-                        if (r.code === 0) {
-                            swal({text: "删除成功", icon: "success", button: "确定"}).then(
-                                function(){
-                                    location.reload(); // 刷新页面同步回复统计
-                                });
-                        } else {
-                            swal({text: r.message, icon: "warning", button: "确定",});
-                        }
-                    },
-                    error: function (html) {
-                    }
-                });
-
-            });
-
-        }
-    }
-</script>

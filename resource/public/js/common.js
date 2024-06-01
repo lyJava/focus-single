@@ -26,9 +26,9 @@ gf.user = {
 // 内容模块
 gf.content = {
     // 删除内容
-    delete: function (id, url, title) {
+    delete: async function (id, url, title) {
         // url = url || "/"
-        personalContentDelete({id}, title, "删除成功", url);
+        await personalContentDelete({id}, title, "删除成功", url);
         /* swal({
             title: "删除内容",
             text: "您确定要删除该内容吗？",
@@ -57,6 +57,14 @@ gf.content = {
                 });
             }
         }); */
+    },
+
+}
+
+gf.personal = {
+    // 删除我的信息
+    deleteMessage: async function (id) {
+        await myMessageDelete(id);
     }
 }
 
@@ -236,16 +244,40 @@ jQuery(function ($) {
 })
 
 /**
+ * 个人中心我的消息删除
+ *
+ * @param param 请求参数
+ */
+const myMessageDelete = async (param) => {
+    console.log("个人中心消息删除", param);
+    await newSwal("提示", `您确定删除回复信息吗`, `warning`, ["取消", "确定"], true).then(async val => {
+        if (val) {
+            await ajaxPromise(`/reply/delete`, "DELETE", {id: param}, undefined).then(resp => {
+                if (resp.code === 0) {
+                    swalSingleBtn(undefined, "删除成功", "success", "确定", false).then(()=> {
+                        location.reload();
+                    });
+                } else {
+                    swalSingleBtn(undefined, resp.message, "warning", "确定", false);
+                }
+            });
+        } else {
+            console.log("取消了内容回复删除操作");
+        }
+    });
+}
+
+/**
  * 个人中心内容删除
  * 
- * @param url         请求URL
  * @param param       请求参数
- * @param content     内容标题
+ * @param title       内容标题
+ * @param message     提示信息
  * @param redirectUrl 跳转URL
  */
 const personalContentDelete = async (param, title, message, redirectUrl) => {
     console.log("个人中心内容删除参数", param, title, redirectUrl);
-    await newSwal("提醒", `你确定删除该内容【${title}】吗？`, `warning`, ["取消", "确定"], true).then(async val => {
+    await newSwal("提醒", title ? `你确定删除该内容【${title}】吗？`: `你确定删除该信息吗`, `warning`, ["取消", "确定"], true).then(async val => {
         if (val) {
             await ajaxPromise(`/content/delete`, "DELETE", param, message).then(resp => {
                 swal({
