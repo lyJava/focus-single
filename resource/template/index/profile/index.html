@@ -69,7 +69,8 @@
                 },
             },
             submitHandler: function (form) {
-                $('button[type=submit]').attr('disabled', 'true');
+                const $button = $('button[type=submit]');
+                $button.attr('disabled', 'true');
                 // 传输加密
 
                 jQuery(form).ajaxSubmit({
@@ -84,7 +85,7 @@
                                 window.location.href = "/profile";
                             });
                         } else {
-                            if (r.message != "") {
+                            if (r.message !== "") {
                                 swal({
                                     text: r.message,
                                     icon: "warning",
@@ -94,7 +95,7 @@
                         }
                     }
                 });
-                $('button[type=submit]').removeAttr('disabled');
+                $button.removeAttr('disabled');
             },
             errorPlacement: function (error, element) {
                 element.addClass("is-invalid")
