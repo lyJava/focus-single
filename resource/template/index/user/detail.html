@@ -82,21 +82,23 @@
                     </div>
                     <div class="float-right">
                         <span style="font-size: 12px;color: #ccc;text-align: right;">
-                            <span class="icon iconfont">&#xe660;</span> {{$item.Content.ViewCount}}
-                            &nbsp;&nbsp;|&nbsp;&nbsp;
-                            <span class="icon iconfont">&#xe6ab;</span> {{$item.Content.ReplyCount}}
-                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                            <span class="icon iconfont">&#xe660;</span>
+                            {{$item.Content.ViewCount}}&nbsp;&nbsp;|&nbsp;&nbsp;
+                            <span class="icon iconfont">&#xe6ab;</span>
+                            {{$item.Content.ReplyCount}}&nbsp;&nbsp;|&nbsp;&nbsp;
                         </span>
-                        <span style="font-size: 12px;color: #ccc;">{{$item.Content.CreatedAt |
-                            $.BuildIn.FormatTime}}</span>
+                        <span style="font-size: 12px;color: #ccc;">{{$item.Content.CreatedAt |$.BuildIn.FormatTime}}</span>
                         {{if $.Context.User}}
                         {{if eq $.Data.User.Id $.Context.User.Id}}
                         <span style="font-size: 12px;color: #ccc;text-align: right;">
-                            &nbsp;|&nbsp;&nbsp;<a href="/content/update/{{$item.Content.Id}}" title="编辑">
-                                <span class="icon iconfont">&#xe780;</span></a>
-                            &nbsp;|&nbsp;&nbsp; <a href="javascript:void(0);" title="删除"
-                                onclick="gf.content.delete({{$item.Content.Id}},'/user/{{$.Data.User.Id}}?type={{$item.Category.ContentType}}&cate={{$cate}}', '{{$item.Content.Title}}')"><span
-                                    class="icon iconfont" style="color: rgb(238, 22, 22);">&#xe63c;</span>
+                            &nbsp;|&nbsp;&nbsp;
+                            <a href="/content/update/{{$item.Content.Id}}" title="编辑">
+                                <span class="icon iconfont">&#xe780;</span>
+                            </a>
+                            &nbsp;|&nbsp;&nbsp;
+                            <a href="javascript:void(0);" title="删除"
+                                onclick="gf.content.delete({{$item.Content.Id}}, '/user/{{$.Data.User.Id}}?type={{$item.Category.ContentType}}&cate={{$cate}}', '{{$item.Content.Title}}')">
+                                <span class="icon iconfont" style="color: rgb(238, 22, 22);">&#xe63c;</span>
                             </a>
                         </span>
                         {{end}}
