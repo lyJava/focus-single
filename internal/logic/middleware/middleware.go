@@ -26,7 +26,7 @@ func New() *sMiddleware {
 	}
 }
 
-// 返回处理中间件
+// ResponseHandler 返回处理中间件
 func (s *sMiddleware) ResponseHandler(r *ghttp.Request) {
 	r.Middleware.Next()
 
