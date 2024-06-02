@@ -10,20 +10,20 @@
                     <div class="form-group row">
                         <label class="col-lg-2 col-md-2 col-sm-2 col-form-label required text-right" for="passport">账号：</label>
                         <div class="col-lg-9 col-md-9 col-sm-9">
-                            <input type="text" class="form-control"  minlength="3" maxlength="20" id="passport" name="passport" placeholder="请输入账号" required />
+                            <input type="text" class="form-control"  minlength="3" maxlength="20" id="passport" name="passport" value="goframe" placeholder="请输入账号" required />
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-2 col-md-2 col-sm-2 col-form-label required text-right" for="password">密码：</label>
                         <div class="col-lg-9 col-md-9 col-sm-9">
-                            <input type="password" class="form-control" minlength="6" maxlength="20" id="password" name="password" placeholder="请输入密码"  required />
+                            <input type="password" class="form-control" minlength="6" maxlength="20" id="password" name="password" value="123456" placeholder="请输入密码"  required />
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-2 col-md-2 col-sm-2 col-form-label required text-right" for="captcha">验证码</label>
                         <div class="col-lg-9 col-md-9 col-sm-9">
                             <div class="input-group mb-3">
-                                <input type="text" class="form-control" minlength="4" maxlength="4" id="captcha"  name="captcha" placeholder="请输入正确的验证码" required />
+                                <input type="text" class="form-control" minlength="4" maxlength="4" id="captcha" name="captcha" placeholder="请输入正确的验证码" required />
                                 <div class="input-group-append ml-2">
                                     <span class="input-group-text " style="cursor: pointer;padding: 0;">
                                         <img id="code-img" src="" class="captcha" loading="lazy" onclick="gf.reloadCaptcha('code-img')" alt="验证码" width="130" title="看不清？点击刷新"/>
