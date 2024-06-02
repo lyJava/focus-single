@@ -8,7 +8,7 @@ import (
 	"focus-single/internal/service"
 )
 
-// 图形验证码
+// Captcha 图形验证码
 var Captcha = cCaptcha{}
 
 type cCaptcha struct{}
