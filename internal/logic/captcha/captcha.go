@@ -8,6 +8,7 @@ import (
 	"github.com/gogf/gf/v2/os/gsession"
 	"github.com/gogf/gf/v2/util/guid"
 	"github.com/mojocn/base64Captcha"
+	"log"
 )
 
 type sCaptcha struct{}
@@ -41,37 +42,47 @@ func newDriver() *base64Captcha.DriverString {
 
 // NewAndStore 创建验证码，直接输出验证码图片内容到HTTP Response.
 func (s *sCaptcha) NewAndStore(ctx context.Context, name string) error {
-	request := g.RequestFromCtx(ctx)
 	captcha := base64Captcha.NewCaptcha(captchaDriver, captchaStore)
+	id, content, answer := captcha.Driver.GenerateIdQuestionAnswer()
+	log.Printf("验证码ID:%s,验证码:%s,结果:%s", id, content, answer)
 
-	_, content, answer := captcha.Driver.GenerateIdQuestionAnswer()
-	item, _ := captcha.Driver.DrawCaptcha(content)
-	g.Log().Infof(ctx, "验证码内容===%s", content)
 	captchaStoreKey := guid.S()
+	log.Printf("验证码缓存key:%s,值为:%s", name, captchaStoreKey)
+
+	request := g.RequestFromCtx(ctx)
 	if err := request.Session.Set(name, captchaStoreKey); err != nil {
 		g.Log().Errorf(ctx, "设置验证码session错误==%+v", err)
 		return err
 	}
+
 	if err := captcha.Store.Set(captchaStoreKey, answer); err != nil {
 		g.Log().Errorf(ctx, "设置验证码Store错误==%+v", err)
 		return err
 	}
+
+	item, _ := captcha.Driver.DrawCaptcha(content)
 	_, err := item.WriteTo(request.Response.Writer)
+
+	data, _ := request.Session.Data()
+	g.Log().Infof(ctx, "创建验证码session中data===%v", data) // 这里r.Session.Data()有值的
 	return err
 }
 
 // VerifyAndClear 校验验证码，并清空缓存的验证码信息
-func (s *sCaptcha) VerifyAndClear(r *ghttp.Request, name string, value string) bool {
-	ctx := context.Background()
-	captchaStoreKey := r.Session.MustGet(name).String()
-
-	g.Log().Infof(ctx, "验证码:%s,前端传入验证码:%s,验证码缓存key==%s", name, value, captchaStoreKey)
-
+func (s *sCaptcha) VerifyAndClear(request *ghttp.Request, name string, value string) bool {
 	defer func(Session *gsession.Session, keys ...string) {
 		err := Session.Remove(keys...)
 		if err != nil {
-			g.Log().Errorf(ctx, "验证码清空缓存错误==%+v", err)
+
 		}
-	}(r.Session, name)
+	}(request.Session, name)
+
+	dataMap, _ := request.Session.Data()
+	log.Printf("验证码验证获取session中data===%v", dataMap) //这里的r.Session.Data()有时候为空
+
+	captchaStoreKey := request.Session.MustGet(name).String()
+
+	log.Printf("验证码验证:%s,传入验证码:%s,码缓存key==%s", name, value, captchaStoreKey)
+
 	return captchaStore.Verify(captchaStoreKey, value, true)
 }
