@@ -9,6 +9,7 @@ import (
 	"focus-single/internal/model/do"
 	"focus-single/internal/model/entity"
 	"focus-single/internal/service"
+	"focus-single/internal/util"
 	"github.com/gogf/gf/v2/crypto/gmd5"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -17,6 +18,7 @@ import (
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/o1egl/govatar"
+	"log"
 )
 
 type sUser struct {
@@ -146,9 +148,19 @@ func (s *sUser) Register(ctx context.Context, in model.UserRegisterInput) error 
 			return gerror.Wrapf(err, `自动创建头像失败`)
 		}
 		user.Avatar = fmt.Sprintf(`%s/%s.jpg`, s.avatarUploadUrlPrefix, user.Passport)
-		_, err := dao.User.Ctx(ctx).TX(tx).Data(user).OmitEmpty().Save()
-		g.Log().Errorf(ctx, "创建头像保存错误===%+v", err)
-		return err
+		log.Printf("注册用户:%s", util.ToJsonFormat(&user, false))
+		_, err := dao.User.Ctx(ctx).TX(tx).
+			Data(user).
+			OmitEmpty().
+			OnConflict(
+				dao.User.Columns().Id,
+			).
+			Save()
+		if err != nil {
+			g.Log().Errorf(ctx, "用户注册错误===%+v", err)
+			return err
+		}
+		return nil
 	})
 }
 
@@ -204,13 +216,14 @@ func (s *sUser) UpdateAvatar(ctx context.Context, in model.UserUpdateAvatarInput
 		var (
 			err error
 		)
-		_, err = dao.User.Ctx(ctx).TX(tx).Data(do.User{
-			Avatar: in.Avatar,
-		}).Where(do.User{
-			Id: in.UserId,
-		}).Update()
-		g.Log().Errorf(ctx, "修改头像错误===%+v", err)
-		return err
+		_, err = dao.User.Ctx(ctx).TX(tx).
+			Data(do.User{Avatar: in.Avatar}).
+			Where(do.User{Id: in.UserId}).
+			Update()
+		if err != nil {
+			g.Log().Errorf(ctx, "修改头像错误===%+v", err)
+		}
+		return nil
 	})
 }
 
