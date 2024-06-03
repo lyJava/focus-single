@@ -2,7 +2,7 @@
 gf = {
     // 刷新验证码
     reloadCaptcha: function(imgId) {
-        $("#"+imgId).attr("src","/captcha?v="+Math.random());
+        $("#"+imgId).attr("src", "/captcha?v="+Math.random());
     },
 }
 
