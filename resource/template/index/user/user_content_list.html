@@ -1,35 +1,39 @@
 {{if .ContentType}}
+{{ $contentType := $.ContentType}}
 <li class="list-group-item gf-list-item">
-    <a class="btn btn-link {{if not $.Query.cate}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-        href="/user/{{$.ContentType}}?sort={{.Query.sort}}">全部</a>
+    {{ $cate := .Query.cate }}
+    {{ $sort := .Query.sort }}
+    <a class="btn btn-link {{if not $cate}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+        href="/user/{{$contentType}}?sort={{.Query.sort}}">全部</a>
     {{range $index, $item := .BuildIn.CategoryTree .ContentType}}
-    <a class="btn btn-link {{if eq $.Query.cate $item.Id}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-        href="/user/{{$.ContentType}}?cate={{$item.Id}}&sort={{$.Query.sort}}">{{$item.Name}}</a>
+    <a class="btn btn-link {{if eq $cate $item.Id}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+        href="/user/{{$contentType}}?cate={{$item.Id}}&sort={{$.Query.sort}}">{{$item.Name}}</a>
     {{end}}
     <div class="float-right">
-        <a class="btn btn-link {{if eq .Query.sort 0}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-            href="/user/{{$.ContentType}}?cate={{.Query.cate}}&sort=0">最新</a>
-        <a class="btn btn-link {{if eq .Query.sort 1}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-            href="/user/{{$.ContentType}}?cate={{.Query.cate}}&sort=1">活跃</a>
-        <a class="btn btn-link {{if eq .Query.sort 2}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-            href="/user/{{$.ContentType}}?cate={{.Query.cate}}&sort=2">热度</a>
+        <a class="btn btn-link {{if eq $sort 0}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+            href="/user/{{$contentType}}?cate={{$cate}}&sort=0">最新</a>
+        <a class="btn btn-link {{if eq $sort 1}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+            href="/user/{{$contentType}}?cate={{$cate}}&sort=1">活跃</a>
+        <a class="btn btn-link {{if eq $sort 2}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+            href="/user/{{$contentType}}?cate={{$cate}}&sort=2">热度</a>
     </div>
 </li>
 {{else}}
 <li class="list-group-item">
     <div class="float-right">
-        <a class="btn btn-link {{if eq .Query.sort 0}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-            href="/user/{{$.ContentType}}?cate={{.Query.cate}}&sort=0">最新</a>
-        <a class="btn btn-link {{if eq .Query.sort 1}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-            href="/user/{{$.ContentType}}?cate={{.Query.cate}}&sort=1">活跃</a>
-        <a class="btn btn-link {{if eq .Query.sort 2}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
-            href="/user/{{$.ContentType}}?cate={{.Query.cate}}&sort=2">热度</a>
+        <a class="btn btn-link {{if eq $sort 0}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+            href="/user/{{$contentType}}?cate={{$cate}}&sort=0">最新</a>
+        <a class="btn btn-link {{if eq $sort 1}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+            href="/user/{{$contentType}}?cate={{$cate}}&sort=1">活跃</a>
+        <a class="btn btn-link {{if eq $sort 2}}text-primary{{else}}text-secondary{{end}} top-node-btn btn-sm"
+            href="/user/{{$contentType}}?cate={{$cate}}&sort=2">热度</a>
     </div>
 </li>
 {{end}}
 
 {{if .Data.Content}}
 {{range $index, $item := .Data.Content.List}}
+{{ $contentId := $item.Content.Id }}
 <li class="list-group-item gf-list-item">
     <div class="gf-list-item-img">
         <img src="{{$item.User.Avatar}}" style="height: 36px;width:36px;">
@@ -38,7 +42,7 @@
         <div class="float-left">
             <span class="badge badge-primary">{{$item.Category.Name}}</span>
             <span class="gf-list-item-title">
-                <a href="/{{$item.Category.ContentType}}/{{$item.Content.Id}}"
+                <a href="/{{$item.Category.ContentType}}/{{$contentId}}"
                     style="color: #222;">{{$item.Content.Title}}</a>
             </span>
         </div>
@@ -53,11 +57,14 @@
 
             {{if eq $.Data.User.Id $.Context.User.Id}}
             <span style="font-size: 12px;color: #ccc;text-align: right;">
-                &nbsp;|&nbsp;&nbsp; <a href="/content/update?id={{$item.Content.Id}}"><span class="icon iconfont"
-                        style="color: darkred;">&#xe780;</span></a>
-                &nbsp;|&nbsp;&nbsp; <a href="javascript:void(0);"
-                    onclick="gf.content.delete({{$item.Content.Id}},'/user/{{$.ContentType}}')"><span
-                        class="icon iconfont" style="color: black;">&#xe63c;</span></a>
+                &nbsp;|&nbsp;&nbsp;
+                <a href="/content/update/{{$contentId}}">
+                    <span class="icon iconfont" style="color: darkred;">&#xe780;</span>
+                </a>
+                &nbsp;|&nbsp;&nbsp;
+                <a href="javascript:void(0);" onclick="gf.content.delete({{$contentId}},'/user/{{$.ContentType}}')">
+                    <span class="icon iconfont" style="color: black;">&#xe63c;</span>
+                </a>
             </span>
             {{end}}
         </div>
