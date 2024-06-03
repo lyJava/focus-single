@@ -276,7 +276,7 @@ const myMessageDelete = async (param) => {
  * @param redirectUrl 跳转URL
  */
 const personalContentDelete = async (param, title, message, redirectUrl) => {
-    console.log("个人中心内容删除参数", param, title, redirectUrl);
+    console.log("个人中心内容删除参数", param, redirectUrl);
     await newSwal("提醒", title ? `你确定删除该内容【${title}】吗？`: `你确定删除该信息吗`, `warning`, ["取消", "确定"], true).then(async val => {
         if (val) {
             await ajaxPromise(`/content/delete`, "DELETE", param, message).then(resp => {
