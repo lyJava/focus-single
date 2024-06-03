@@ -64,7 +64,7 @@ func (s *sCaptcha) NewAndStore(ctx context.Context, name string) error {
 	_, err := item.WriteTo(request.Response.Writer)
 
 	data, _ := request.Session.Data()
-	g.Log().Infof(ctx, "创建验证码session中data===%v", data) // 这里r.Session.Data()有值的
+	log.Printf("创建验证码session中data===%v", data) // 这里r.Session.Data()有值的
 	return err
 }
 
@@ -78,7 +78,7 @@ func (s *sCaptcha) VerifyAndClear(request *ghttp.Request, name string, value str
 	}(request.Session, name)
 
 	dataMap, _ := request.Session.Data()
-	log.Printf("验证码验证获取session中data===%v", dataMap) //这里的r.Session.Data()有时候为空
+	log.Printf("获取验证码session中data===%v", dataMap) //这里的r.Session.Data()有时候为空
 
 	captchaStoreKey := request.Session.MustGet(name).String()
 
