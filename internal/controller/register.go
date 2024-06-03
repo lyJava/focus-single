@@ -12,7 +12,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// 注册控制器
+// Register 注册控制器
 var Register = cRegister{}
 
 type cRegister struct{}
